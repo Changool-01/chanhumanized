@@ -50,15 +50,18 @@ python manage.py test
 
 ## PythonAnywhere (free demo)
 
+The free demo uses **SQLite** so you don’t need to buy a MySQL database on PythonAnywhere. You can switch to MySQL later for production.
+
 1. Upload this project (git clone or zip).
 2. Create a virtualenv, `pip install -r requirements.txt`.
-3. Create a MySQL database in the PA dashboard.
-4. Web app: WSGI file should set `DJANGO_SETTINGS_MODULE=config.settings` and `sys.path` to the project folder that contains `manage.py`.
-5. Environment variables: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS=yourusername.pythonanywhere.com`, `DJANGO_DB=mysql`, MySQL name/user/password/host (PA shows the host), `OPENAI_API_KEY`.
-6. `python manage.py migrate` and `python manage.py collectstatic`.
-7. Set a **hard monthly budget** in the OpenAI dashboard ($10–20 for a demo).
+3. Web app: WSGI file should set `DJANGO_SETTINGS_MODULE=config.settings` and `sys.path` to the project folder that contains `manage.py`.
+4. Environment variables: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS=yourusername.pythonanywhere.com`, `DJANGO_DB=sqlite`, `OPENAI_API_KEY`.
+5. `python manage.py migrate` and `python manage.py collectstatic`.
+6. Set a **hard monthly budget** in the OpenAI dashboard ($10–20 for a demo).
 
 `api.openai.com` is allowlisted on free PythonAnywhere, so Humanize can work without a paid PA plan. There is no custom domain on the free plan.
+
+To use MySQL later (paid or if you have a free MySQL database available), set `DJANGO_DB=mysql` and add the `MYSQL_*` variables from `.env.example`.
 
 Stripe Pro checkout is **not** in this build.
 
