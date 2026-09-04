@@ -42,7 +42,7 @@ SITE_NAME = "Chan Humanized AI"
 # Security contact / alert settings.
 # DEVELOPER_EMAIL receives the alert when an account is permanently locked.
 # Set it in your .env or PythonAnywhere web app environment.
-DEVELOPER_EMAIL = env("DEVELOPER_EMAIL") or "noreply@chan-humanized-ai.local"
+DEVELOPER_EMAIL = env("DEVELOPER_EMAIL") or "noreply@chanhumanized.local"
 SECURITY_STRICT_DEVICE_IP = env("SECURITY_STRICT_DEVICE_IP")
 SECURITY_EMAIL_ON_LOCKOUT = env("SECURITY_EMAIL_ON_LOCKOUT")
 
@@ -224,7 +224,7 @@ LOGOUT_REDIRECT_URL = "pages:home"
 # Email backend for alerts. Console backend is fine for local/PythonAnywhere demo;
 # replace with a real SMTP backend before production.
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@chan-humanized-ai.local")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@chanhumanized.local")
 
 # --- Humanize product limits -----------------------------------------------
 # Free weekly quota is shown in the UI. Pro fair-use cap is enforced in code

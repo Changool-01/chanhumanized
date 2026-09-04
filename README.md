@@ -3,7 +3,7 @@
 Django app that rewrites AI-generated sentences and paragraphs into more natural writing.
 
 **Public name:** Chan Humanized AI  
-**Stack:** Django 5, MySQL (or SQLite for first run), HTML/CSS/JS, OpenAI `gpt-4o-mini`
+**Stack:** Django 5, SQLite (MySQL optional), HTML/CSS/JS, OpenAI `gpt-4o-mini`
 
 This is a style rewriter. It does not claim text is “AI-free” and it does not score or evade detectors.
 
@@ -52,11 +52,59 @@ python manage.py test
 
 The free demo uses **SQLite** so you don’t need to buy a MySQL database on PythonAnywhere. You can switch to MySQL later for production.
 
-1. Upload this project (git clone or zip).
-2. Create a virtualenv, `pip install -r requirements.txt`.
-3. Web app: WSGI file should set `DJANGO_SETTINGS_MODULE=config.settings` and `sys.path` to the project folder that contains `manage.py`.
-4. Environment variables: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS=yourusername.pythonanywhere.com`, `DJANGO_DB=sqlite`, `OPENAI_API_KEY`.
-5. `python manage.py migrate` and `python manage.py collectstatic`.
+The examples below assume the account is `changool` and the project is cloned into `~/chanhumanized`.
+
+1. Clone into the folder you will use on PythonAnywhere:
+
+   ```bash
+   cd ~
+   git clone https://github.com/Changool-01/chan-humanized-ai.git chanhumanized
+   cd chanhumanized
+   ```
+
+2. Create a virtualenv and install packages:
+
+   ```bash
+   python3.11 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. Web tab settings:
+
+   | Field | Value |
+   |---|---|
+   | **Source code** | `/home/changool/chanhumanized` |
+   | **Working directory** | `/home/changool/chanhumanized` |
+   | **WSGI configuration file** | `/var/www/changool_pythonanywhere_com_wsgi.py` |
+   | **Python version** | `3.11` |
+   | **Virtualenv** | `/home/changool/chanhumanized/.venv` |
+   | **Static files** | `/static/` → `/home/changool/chanhumanized/staticfiles` |
+
+   Copy the contents of `config/pythonanywhere_wsgi.py` into the WSGI file shown above.
+
+4. Environment variables in **Web → Environment variables**:
+
+   ```
+   DJANGO_SECRET_KEY=long-random-string
+   DJANGO_DEBUG=False
+   DJANGO_ALLOWED_HOSTS=changool.pythonanywhere.com
+   DJANGO_DB=sqlite
+   OPENAI_API_KEY=your-fresh-key
+   OPENAI_MODEL=gpt-4o-mini
+   HUMANIZE_CANDIDATES=1
+   ```
+
+5. Run migrations and collect static files in a PythonAnywhere Bash console:
+
+   ```bash
+   cd ~/chanhumanized
+   source .venv/bin/activate
+   python manage.py migrate
+   python manage.py collectstatic
+   python manage.py createsuperuser
+   ```
+
 6. Set a **hard monthly budget** in the OpenAI dashboard ($10–20 for a demo).
 
 `api.openai.com` is allowlisted on free PythonAnywhere, so Humanize can work without a paid PA plan. There is no custom domain on the free plan.

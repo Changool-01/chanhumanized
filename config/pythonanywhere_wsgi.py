@@ -8,7 +8,7 @@ WSGI configuration file (usually /var/www/changool_pythonanywhere_com_wsgi.py).
 import os
 import sys
 
-path = "/home/changool/chan-humanized-ai"
+path = "/home/changool/chanhumanized"
 if path not in sys.path:
     sys.path.insert(0, path)
 
