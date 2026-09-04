@@ -1,19 +1,17 @@
 """
-PythonAnywhere WSGI helper.
+PythonAnywhere WSGI helper for changool.pythonanywhere.com.
 
-On PythonAnywhere, open the Web tab → WSGI configuration file and
-replace its contents with something like this (fix the paths):
-
-    import os
-    import sys
-
-    path = "/home/YOURUSERNAME/ai"
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-    os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings"
-    from django.core.wsgi import get_wsgi_application
-    application = get_wsgi_application()
-
-This module is not used by `runserver`. It exists as a copy-paste reference.
+Copy the contents of this file into the PythonAnywhere Web tab →
+WSGI configuration file (usually /var/www/changool_pythonanywhere_com_wsgi.py).
 """
+
+import os
+import sys
+
+path = "/home/changool/chan-humanized-ai"
+if path not in sys.path:
+    sys.path.insert(0, path)
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings"
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
