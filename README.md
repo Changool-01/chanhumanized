@@ -58,7 +58,7 @@ The examples below assume the account is `changool` and the project is cloned in
 
    ```bash
    cd ~
-   git clone https://github.com/Changool-01/chan-humanized-ai.git chanhumanized
+   git clone https://github.com/Changool-01/chanhumanized.git chanhumanized
    cd chanhumanized
    ```
 
