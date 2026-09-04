@@ -1,0 +1,35 @@
+{# Owner-only original vs humanized, read-only split. #}
+{% extends "base.html" %}
+
+{% block title %}Rewrite {{ job.id }} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="workspace workspace-readonly">
+    <header class="workspace-head">
+        <div>
+            <p class="eyebrow"><a href="{% url 'humanizer:history' %}">← History</a></p>
+            <h1>{{ job.get_tone_display }} · {{ job.get_strength_display }} · {{ job.get_use_case_display }}</h1>
+            <p class="workspace-sub">{{ job.created_at|date:"Y-m-d H:i" }} UTC · {{ job.word_count }} words</p>
+        </div>
+    </header>
+    <div class="workspace-split">
+        <section class="ws-pane">
+            <div class="ws-pane-head"><h2>Original</h2></div>
+            <pre class="ws-result ws-result-static">{{ job.original_text }}</pre>
+        </section>
+        <section class="ws-pane">
+            <div class="ws-pane-head">
+                <h2>Humanized</h2>
+                <div class="ws-actions">
+                    <button type="button" class="btn-ghost" data-copy disabled>Copy</button>
+                    <button type="button" class="btn-ghost" data-download disabled>Download .txt</button>
+                </div>
+            </div>
+            <div class="ws-output" data-output tabindex="0">
+                <pre class="ws-result" data-result>{{ diff_html|safe }}</pre>
+            </div>
+        </section>
+    </div>
+    <p class="workspace-sub" style="margin-top:0.5rem;">Green highlights are additions; red highlights are removals.</p>
+</section>
+{% endblock %}

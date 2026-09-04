@@ -1,0 +1,10 @@
+# Chan Humanized AI — runtime packages
+# Pin Django 5.x for PythonAnywhere compatibility.
+Django>=5.1,<5.3
+django-environ>=0.11,<0.13
+openai>=1.40,<3
+PyMySQL>=1.1,<2
+gunicorn>=22,<26
+
+# No extra security packages required — rate-limiting and CSP are implemented
+# in apps/accounts to keep the free PythonAnywhere deployment self-contained.

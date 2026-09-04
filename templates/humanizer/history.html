@@ -1,0 +1,40 @@
+{# History list of this user's successful rewrites. #}
+{% extends "base.html" %}
+
+{% block title %}History — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <h1>History</h1>
+    <p class="lede">Your recent humanized drafts.</p>
+</section>
+
+{% if jobs %}
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Words</th>
+                <th>Tone</th>
+                <th>Use case</th>
+                <th>Snippet</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+                <tr>
+                    <td>{{ job.created_at|date:"Y-m-d H:i" }} UTC</td>
+                    <td>{{ job.word_count }}</td>
+                    <td>{{ job.get_tone_display }}</td>
+                    <td>{{ job.get_use_case_display }}</td>
+                    <td>
+                        <a href="{% url 'humanizer:history_detail' job.id %}">{{ job.snippet }}</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No rewrites yet. <a href="{% url 'humanizer:workspace' %}">Open the workspace</a>.</p>
+{% endif %}
+{% endblock %}

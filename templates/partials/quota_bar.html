@@ -1,0 +1,20 @@
+{# Weekly quota bar. Free shows used / 100,000. Pro shows the Pro label only. #}
+{% load humanize %}
+{% if snapshot %}
+    <div class="quota-bar" data-quota-bar>
+        {% if snapshot.is_pro %}
+            <span class="quota-plan quota-plan-pro">Pro</span>
+            <span class="quota-copy">Unlimited humanize this week</span>
+        {% else %}
+            <span class="quota-plan">Free</span>
+            <span class="quota-copy">
+                <span data-quota-used>{{ snapshot.used|intcomma }}</span>
+                /
+                {{ snapshot.weekly_limit|intcomma }} words this week
+            </span>
+            <span class="quota-remain">
+                <span data-quota-remaining>{{ snapshot.remaining|intcomma }}</span> remaining
+            </span>
+        {% endif %}
+    </div>
+{% endif %}

@@ -1,0 +1,39 @@
+{# Usage dashboard: plan and weekly words. #}
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <h1>Dashboard</h1>
+    <p class="lede">Hello, {{ user.get_short_name }}.</p>
+</section>
+
+<section class="dash-grid">
+    <article class="dash-card">
+        <h2>Plan</h2>
+        {% if snapshot.is_pro %}
+            <p class="dash-value quota-plan-pro">Pro</p>
+            <p>Unlimited humanize in the workspace.</p>
+        {% else %}
+            <p class="dash-value">Free</p>
+            <p>{{ snapshot.weekly_limit|intcomma }} words each week, {{ snapshot.request_limit|intcomma }} per request.</p>
+            <p><a href="{% url 'pages:pricing' %}">See Pro (${{ pro_price }}/month)</a></p>
+        {% endif %}
+    </article>
+    <article class="dash-card">
+        <h2>This week</h2>
+        <p class="dash-value">{{ snapshot.used|intcomma }} words used</p>
+        {% if snapshot.is_pro %}
+            <p>Your week resets Monday, 00:00 UTC.</p>
+        {% else %}
+            <p>{{ snapshot.remaining|intcomma }} words remaining. Week resets Monday, 00:00 UTC.</p>
+        {% endif %}
+    </article>
+</section>
+<p class="dash-actions">
+    <a class="btn-primary" href="{% url 'humanizer:workspace' %}">Go to workspace</a>
+    <a class="btn-ghost" href="{% url 'humanizer:history' %}">History</a>
+</p>
+{% endblock %}

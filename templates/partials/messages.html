@@ -1,0 +1,8 @@
+{# Django messages → one visual style for success and error. #}
+{% if messages %}
+    <div class="site-messages" role="status">
+        {% for message in messages %}
+            <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}

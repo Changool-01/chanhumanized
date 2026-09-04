@@ -1,0 +1,10 @@
+{# Shared shell for login / register / reset — one centered card. #}
+{% extends "base.html" %}
+
+{% block content %}
+<section class="auth-wrap">
+    <div class="auth-card">
+        {% block auth_inner %}{% endblock %}
+    </div>
+</section>
+{% endblock %}

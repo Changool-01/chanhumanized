@@ -1,0 +1,22 @@
+# Local MySQL 8 for development (utf8mb4 to match PythonAnywhere).
+# Usage: docker compose up -d mysql
+# Then set DJANGO_DB=mysql in .env
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: chan_humanized_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: chan_humanized
+      MYSQL_USER: chan
+      MYSQL_PASSWORD: chan
+      MYSQL_ROOT_PASSWORD: chanroot
+    ports:
+      - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - chan_mysql_data:/var/lib/mysql
+
+volumes:
+  chan_mysql_data:

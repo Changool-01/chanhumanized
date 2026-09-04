@@ -1,0 +1,35 @@
+{# Create account. #}
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}Create account — {{ site_name }}{% endblock %}
+
+{% block auth_inner %}
+<h1>Create an account</h1>
+<p class="auth-lead">Free includes 100,000 words each week.</p>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <label>
+        Name
+        {{ form.name }}
+        {{ form.name.errors }}
+    </label>
+    <label>
+        Email
+        {{ form.email }}
+        {{ form.email.errors }}
+    </label>
+    <label>
+        Password
+        {{ form.password1 }}
+        {{ form.password1.errors }}
+    </label>
+    <label>
+        Confirm password
+        {{ form.password2 }}
+        {{ form.password2.errors }}
+    </label>
+    <button class="btn-primary" type="submit">Create account</button>
+</form>
+<p class="auth-switch">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
+{% endblock %}

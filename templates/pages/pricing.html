@@ -1,0 +1,38 @@
+{# Pricing: Free vs Pro only. Stripe is not connected yet. #}
+{% extends "base.html" %}
+
+{% block title %}Pricing — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <h1>Free and Pro</h1>
+    <p class="lede">Start on Free. Upgrade when you need more room to write.</p>
+</section>
+
+<section class="price-grid" aria-label="Plans">
+    {# Free card #}
+    <article class="price-card">
+        <h2>Free</h2>
+        <p class="price-amount">$0</p>
+        <ul>
+            <li>100,000 words per week</li>
+            <li>2,000 words per request</li>
+            <li>History of your rewrites</li>
+        </ul>
+        <a class="btn-ghost" href="{% url 'accounts:register' %}">Create a free account</a>
+    </article>
+
+    {# Pro card — muted gold accent #}
+    <article class="price-card price-card-pro">
+        <h2>Pro</h2>
+        <p class="price-amount">$4.99<span> / month</span></p>
+        <ul>
+            <li>Unlimited humanize</li>
+            <li>5,000 words per request</li>
+            <li>History of your rewrites</li>
+        </ul>
+        <p class="price-note">Checkout will be available after this demo. You can still use Free today.</p>
+        <a class="btn-primary" href="{% url 'accounts:register' %}">Start with Free</a>
+    </article>
+</section>
+{% endblock %}

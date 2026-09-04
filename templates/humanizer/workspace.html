@@ -1,0 +1,102 @@
+{# Split workspace: original left, humanized right, controls above. #}
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Workspace — {{ site_name }}{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wordcount.js' %}"></script>
+<script src="{% static 'js/workspace.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="workspace" data-workspace data-humanize-url="{% url 'humanizer:humanize_api' %}" data-request-limit="{{ snapshot.request_limit }}">
+    <header class="workspace-head">
+        <div>
+            <h1>Workspace</h1>
+            <p class="workspace-sub">Paste on the left. The humanized draft appears on the right.</p>
+        </div>
+        {% include "partials/quota_bar.html" %}
+    </header>
+
+    {# Controls: use case, mode, tone, strength, style note, options, Humanize #}
+    <form class="workspace-bar" data-humanize-form>
+        {% csrf_token %}
+        <label>
+            Use case
+            <select name="use_case" class="field-input">
+                {% for value, label in use_cases %}
+                    <option value="{{ value }}" {% if value == "general" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Mode
+            <select name="mode" class="field-input">
+                {% for value, label in modes %}
+                    <option value="{{ value }}" {% if value == "paragraph" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Tone
+            <select name="tone" class="field-input">
+                {% for value, label in tones %}
+                    <option value="{{ value }}" {% if value == "professional" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Strength
+            <select name="strength" class="field-input">
+                {% for value, label in strengths %}
+                    <option value="{{ value }}" {% if value == "medium" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="workspace-style-note">
+            Style note
+            <input type="text" name="style_note" class="field-input" placeholder="e.g. write like a Reddit comment, keep it punchy" maxlength="255">
+        </label>
+        <label class="workspace-option">
+            <input type="checkbox" name="show_diff" data-show-diff>
+            Show changes
+        </label>
+        <button class="btn-primary" type="submit" data-humanize-submit>Humanize</button>
+        <button class="btn-ghost" type="button" data-regenerate disabled>Try again</button>
+    </form>
+
+    {# Error / status banner #}
+    <p class="workspace-banner" data-banner hidden></p>
+
+    {# Split panes — CSS stacks them under 800px. #}
+    <div class="workspace-split">
+        <section class="ws-pane">
+            <div class="ws-pane-head">
+                <h2>Original</h2>
+                <p class="ws-count">
+                    <span data-word-count>0</span>
+                    /
+                    <span data-word-cap>{{ snapshot.request_limit|intcomma }}</span>
+                    words
+                </p>
+            </div>
+            <label class="visually-hidden" for="original-text">Original text</label>
+            <textarea id="original-text" name="original_text" class="ws-textarea" data-original placeholder="Paste an AI-generated sentence or paragraph…"></textarea>
+        </section>
+        <section class="ws-pane">
+            <div class="ws-pane-head">
+                <h2>Humanized</h2>
+                <div class="ws-actions">
+                    <button type="button" class="btn-ghost" data-copy disabled>Copy</button>
+                    <button type="button" class="btn-ghost" data-download disabled>Download .txt</button>
+                </div>
+            </div>
+            <div class="ws-output" data-output tabindex="0">
+                <p class="ws-empty" data-empty>Your rewritten text will appear here.</p>
+                <pre class="ws-result" data-result hidden></pre>
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}

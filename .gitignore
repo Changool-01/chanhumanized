@@ -1,0 +1,23 @@
+# Local secrets and virtualenv
+.env
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+*.so
+
+# Django
+db.sqlite3
+staticfiles/
+media/
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

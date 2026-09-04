@@ -1,0 +1,204 @@
+/* Landing, pricing, auth cards, dashboard, history, legal. */
+
+/* Hero */
+.hero {
+    padding: var(--space-4) 0 var(--space-7);
+}
+
+.hero h1 {
+    font-size: clamp(2rem, 5vw, 3.1rem);
+    max-width: 16ch;
+    margin-bottom: var(--space-4);
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+}
+
+/* Three steps */
+.steps ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+}
+
+.steps li {
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: var(--space-5);
+    box-shadow: var(--shadow);
+}
+
+.step-num {
+    display: inline-block;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--color-gold);
+    margin-bottom: var(--space-2);
+}
+
+.steps h2 {
+    font-size: 1.25rem;
+}
+
+.steps p {
+    margin: 0;
+    color: var(--color-ink-soft);
+}
+
+/* Pricing */
+.price-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+}
+
+.price-card {
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: var(--space-6);
+    box-shadow: var(--shadow);
+}
+
+.price-card-pro {
+    border-color: var(--color-gold);
+    background: linear-gradient(180deg, var(--color-gold-soft) 0%, var(--color-bg-elev) 42%);
+}
+
+.price-amount {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    margin: 0 0 var(--space-4);
+}
+
+.price-amount span {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-ink-soft);
+}
+
+.price-card ul {
+    margin: 0 0 var(--space-5);
+    padding-left: 1.1rem;
+    color: var(--color-ink-soft);
+}
+
+.price-note {
+    font-size: 0.9rem;
+    color: var(--color-ink-soft);
+}
+
+/* Auth */
+.auth-wrap {
+    display: flex;
+    justify-content: center;
+}
+
+.auth-card {
+    width: min(28rem, 100%);
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: var(--space-6);
+    box-shadow: var(--shadow);
+}
+
+.auth-card h1 {
+    font-size: 1.8rem;
+}
+
+.auth-lead,
+.auth-switch {
+    color: var(--color-ink-soft);
+}
+
+.auth-card form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: var(--space-5) 0;
+}
+
+.auth-card .btn-primary {
+    align-self: flex-start;
+}
+
+/* Dashboard */
+.dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+
+.dash-card {
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: var(--space-5);
+}
+
+.dash-value {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+}
+
+.dash-actions {
+    display: flex;
+    gap: var(--space-3);
+}
+
+/* History table */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.history-table th,
+.history-table td {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-line);
+    vertical-align: top;
+}
+
+.history-table th {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    font-weight: 600;
+}
+
+.history-table tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Legal */
+.legal {
+    max-width: 40rem;
+}
+
+.legal h1 {
+    font-size: 2rem;
+}
+
+@media (max-width: 800px) {
+    .steps ol,
+    .price-grid,
+    .dash-grid {
+        grid-template-columns: 1fr;
+    }
+}

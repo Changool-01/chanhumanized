@@ -1,0 +1,10 @@
+{# Footer with legal placeholders. #}
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <p>&copy; {% now "Y" %} {{ site_name }}</p>
+        <nav aria-label="Legal">
+            <a href="{% url 'pages:terms' %}">Terms</a>
+            <a href="{% url 'pages:privacy' %}">Privacy</a>
+        </nav>
+    </div>
+</footer>

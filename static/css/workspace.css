@@ -1,0 +1,250 @@
+/* Split workspace: original | humanized.
+   Stacks into a single column below 800px so phones still work. */
+
+.workspace-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.workspace-head h1 {
+    font-size: 2rem;
+    margin-bottom: var(--space-1);
+}
+
+.workspace-sub {
+    margin: 0;
+    color: var(--color-ink-soft);
+}
+
+/* Quota */
+.quota-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-size: 0.92rem;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+}
+
+.quota-plan {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.quota-remain {
+    color: var(--color-ink-soft);
+}
+
+/* Control bar */
+.workspace-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    padding: var(--space-4);
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+}
+
+.workspace-bar label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 9rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.workspace-bar select,
+.workspace-bar input[type="text"] {
+    width: 100%;
+    min-height: 2.4rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+.workspace-bar input[type="text"]:focus,
+.workspace-bar select:focus {
+    outline: 2px solid var(--color-ink-soft);
+    outline-offset: 1px;
+}
+
+.workspace-bar .btn-primary {
+    margin-left: auto;
+}
+
+.workspace-style-note {
+    min-width: 16rem;
+    flex: 1;
+}
+
+.workspace-option {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.workspace-option input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--color-ink);
+}
+
+/* Diff highlights */
+.diff-ins {
+    background: #d4f5d4;
+    color: #1c5a1c;
+    padding: 0.05rem 0.2rem;
+    border-radius: 4px;
+}
+
+.diff-del {
+    background: #ffdada;
+    color: #8b2e2e;
+    text-decoration: line-through;
+    padding: 0.05rem 0.2rem;
+    border-radius: 4px;
+}
+
+.workspace-banner {
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    background: #f8eeee;
+}
+
+.workspace-banner.is-loading {
+    border-color: var(--color-line);
+    color: var(--color-ink-soft);
+    background: var(--color-bg-elev);
+}
+
+/* Split panes */
+.workspace-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    min-height: 28rem;
+}
+
+.ws-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 24rem;
+    background: var(--color-bg-elev);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.ws-pane-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-line);
+}
+
+.ws-pane-head h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.ws-count {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--color-ink-soft);
+}
+
+.ws-count.is-over {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.ws-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.ws-actions .btn-ghost {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.88rem;
+}
+
+.ws-textarea,
+.ws-output,
+.ws-result-static {
+    flex: 1;
+    margin: 0;
+    padding: var(--space-4);
+    border: 0;
+    resize: none;
+    font: inherit;
+    line-height: 1.65;
+    background: transparent;
+    min-height: 22rem;
+}
+
+.ws-output {
+    overflow: auto;
+}
+
+.ws-empty {
+    color: var(--color-ink-soft);
+    margin: 0;
+}
+
+.ws-result {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 1.02rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ws-result-static {
+    min-height: 18rem;
+    font-family: var(--font-sans);
+    white-space: pre-wrap;
+}
+
+.workspace-readonly .workspace-split {
+    min-height: 18rem;
+}
+
+@media (max-width: 800px) {
+    .workspace-split {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-bar .btn-primary,
+    .workspace-bar .btn-ghost {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .workspace-style-note {
+        min-width: 100%;
+    }
+}

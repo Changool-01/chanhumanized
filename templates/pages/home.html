@@ -1,0 +1,43 @@
+{# Landing: short pitch, three steps, two CTAs. #}
+{% extends "base.html" %}
+
+{% block title %}{{ site_name }} — more natural writing{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">A writing desk for drafts that sound too machine-made</p>
+    <h1>Make AI drafts read like you wrote them.</h1>
+    <p class="lede">
+        Paste a sentence or a paragraph. Choose a tone.
+        {{ site_name }} rewrites the voice and keeps your meaning.
+    </p>
+    <div class="hero-actions">
+        {% if user.is_authenticated %}
+            <a class="btn-primary" href="{% url 'humanizer:workspace' %}">Open the workspace</a>
+        {% else %}
+            <a class="btn-primary" href="{% url 'accounts:register' %}">Try free</a>
+        {% endif %}
+        <a class="btn-ghost" href="{% url 'pages:pricing' %}">See pricing</a>
+    </div>
+</section>
+
+<section class="steps" aria-label="How it works">
+    <ol>
+        <li>
+            <span class="step-num">1</span>
+            <h2>Paste</h2>
+            <p>Drop in the AI-generated sentence or paragraph you want to smooth.</p>
+        </li>
+        <li>
+            <span class="step-num">2</span>
+            <h2>Choose a tone</h2>
+            <p>Academic, professional, conversational, or casual — plus how strong the rewrite should be.</p>
+        </li>
+        <li>
+            <span class="step-num">3</span>
+            <h2>Copy</h2>
+            <p>Read the humanized version beside your original, then copy or download it.</p>
+        </li>
+    </ol>
+</section>
+{% endblock %}

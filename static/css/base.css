@@ -1,0 +1,305 @@
+/* Shared chrome: reset, header, footer, buttons, forms, flashes.
+   Page-specific layout lives in pages.css and workspace.css. */
+
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--space-3);
+}
+
+p {
+    margin: 0 0 var(--space-4);
+}
+
+a {
+    color: var(--color-ink);
+    text-underline-offset: 0.18em;
+}
+
+a:hover {
+    color: var(--color-gold);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Header */
+.site-header {
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg-elev);
+}
+
+.site-header-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 var(--space-5);
+    min-height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.site-brand {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.15rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    font-size: 0.95rem;
+}
+
+.site-nav a {
+    text-decoration: none;
+}
+
+.site-nav a:hover {
+    text-decoration: underline;
+}
+
+.nav-cta {
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--color-ink);
+    border-radius: 999px;
+}
+
+.site-logout {
+    margin: 0;
+}
+
+.site-logout button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+}
+
+.site-logout button:hover {
+    color: var(--color-gold);
+}
+
+/* Main + footer */
+.site-main {
+    flex: 1;
+    width: 100%;
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: var(--space-7) var(--space-5) var(--space-8);
+}
+
+.site-footer {
+    border-top: 1px solid var(--color-line);
+    font-size: 0.9rem;
+    color: var(--color-ink-soft);
+}
+
+.site-footer-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: var(--space-5);
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.site-footer nav {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.site-footer a {
+    color: inherit;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.98rem;
+    padding: 0.65rem 1.15rem;
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: var(--color-ink);
+    color: var(--color-bg);
+}
+
+.btn-primary:hover {
+    background: #12182a;
+    color: var(--color-bg);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--color-ink);
+    border-color: var(--color-line);
+}
+
+.btn-ghost:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+}
+
+.btn-ghost:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Forms */
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.field-input,
+.auth-card input,
+.auth-card select,
+.auth-card textarea {
+    font: inherit;
+    font-weight: 400;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: var(--color-bg-elev);
+    color: var(--color-ink);
+}
+
+.errorlist {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-danger);
+    font-weight: 400;
+    font-size: 0.88rem;
+}
+
+/* Flashes */
+.site-messages {
+    max-width: var(--max);
+    margin: var(--space-4) auto 0;
+    padding: 0 var(--space-5);
+}
+
+.flash {
+    margin: 0 0 var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-line);
+    background: var(--color-bg-elev);
+}
+
+.flash-success {
+    border-color: var(--color-ok);
+}
+
+.flash-error,
+.flash-warning {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    margin-bottom: var(--space-3);
+}
+
+.lede {
+    font-size: 1.15rem;
+    color: var(--color-ink-soft);
+    max-width: 38rem;
+}
+
+.page-intro {
+    margin-bottom: var(--space-6);
+}
+
+.page-intro h1 {
+    font-size: 2.2rem;
+}
+
+.quota-plan-pro {
+    color: var(--color-gold);
+    font-weight: 600;
+}
+
+@media (max-width: 720px) {
+    .site-header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-top: var(--space-3);
+        padding-bottom: var(--space-3);
+    }
+
+    .site-footer-inner {
+        flex-direction: column;
+    }
+}
