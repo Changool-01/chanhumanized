@@ -1,4 +1,4 @@
-"""ASGI entry (unused on PythonAnywhere; kept for completeness)."""
+"""ASGI config for Chan Humanized AI."""
 
 import os
 

@@ -80,7 +80,7 @@ class AuthTests(TestCase):
 
 
 class SecurityTests(TestCase):
-    """Hardening rules requested before free PythonAnywhere deployment."""
+    """Account lockout, device binding, and rate-limit hardening."""
 
     def setUp(self):
         # Rate-limit buckets are process-global; isolate aggressive tests.

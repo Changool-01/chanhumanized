@@ -1,4 +1,4 @@
-# Local MySQL 8 for development (utf8mb4 to match PythonAnywhere).
+# Local MySQL 8 for development (utf8mb4).
 # Usage: docker compose up -d mysql
 # Then set DJANGO_DB=mysql in .env
 

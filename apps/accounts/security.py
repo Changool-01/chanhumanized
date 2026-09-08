@@ -1,7 +1,6 @@
 """Security helpers: IP/device fingerprint extraction, lockout, and alerts.
 
-These are used by forms, views, and middleware to enforce the pre-deployment
-security rules requested for the free PythonAnywhere deployment:
+These are used by forms, views, and middleware to enforce:
   - one email / one IP / one device per account
   - escalating password-attempt lockout (1 min -> 10 min -> permanent)
   - developer email alerts on permanent lockout
@@ -30,7 +29,7 @@ STAGE_3_ATTEMPTS = STAGE_2_ATTEMPTS + 1  # 9
 
 
 def get_client_ip(request):
-    """Return the client IP, trusting the PythonAnywhere proxy header first."""
+    """Return the client IP, trusting X-Forwarded-For when a proxy is in front."""
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
         # The leftmost value is the end-user IP supplied by the proxy chain.

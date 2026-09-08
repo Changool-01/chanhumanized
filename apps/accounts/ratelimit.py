@@ -1,9 +1,8 @@
 """Lightweight, self-contained rate-limiting decorator using Django's cache.
 
-No external packages are needed. On a single PythonAnywhere worker the default
-LocMemCache is sufficient; for multiple workers replace CACHES in settings.py
-with a shared backend (Redis, Memcached) and the decorator will use it
-automatically.
+No external packages are needed. LocMemCache is sufficient for a single
+process; for multiple workers replace CACHES in settings.py with a shared
+backend (Redis, Memcached) and the decorator will use it automatically.
 """
 
 import time

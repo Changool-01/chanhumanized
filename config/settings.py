@@ -1,9 +1,8 @@
 """
 Django settings for Chan Humanized AI.
 
-Secrets and host-specific values come from environment variables (.env locally,
-PythonAnywhere web-app environment later). SQLite is the default so the demo
-runs without Docker; set DJANGO_DB=mysql for MySQL 8.
+Secrets and host-specific values come from environment variables (.env).
+SQLite is the default; set DJANGO_DB=mysql for MySQL 8.
 """
 
 import sys
@@ -25,7 +24,7 @@ env = environ.Env(
     SECURITY_EMAIL_ON_LOCKOUT=(bool, True),
 )
 
-# Load .env if present (missing file is fine on PythonAnywhere when env vars are set).
+# Load .env if present.
 environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="unsafe-dev-key-change-me")
@@ -41,7 +40,7 @@ SITE_NAME = "Chan Humanized AI"
 
 # Security contact / alert settings.
 # DEVELOPER_EMAIL receives the alert when an account is permanently locked.
-# Set it in your .env or PythonAnywhere web app environment.
+# Set it in your .env.
 DEVELOPER_EMAIL = env("DEVELOPER_EMAIL") or "noreply@chanhumanized.local"
 SECURITY_STRICT_DEVICE_IP = env("SECURITY_STRICT_DEVICE_IP")
 SECURITY_EMAIL_ON_LOCKOUT = env("SECURITY_EMAIL_ON_LOCKOUT")
@@ -94,7 +93,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # --- Database --------------------------------------------------------------
-# sqlite: zero-setup local/demo. mysql: docker-compose or PythonAnywhere.
+# sqlite: zero-setup local. mysql: docker-compose.
 
 if env("DJANGO_DB") == "mysql":
     DATABASES = {
@@ -147,9 +146,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# --- Security hardening (do not weaken before PythonAnywhere deployment) ---
+# --- Security hardening ---
 if not DEBUG:
-    # PythonAnywhere terminates TLS upstream; tell Django that HTTPS is in use.
+    # When TLS is terminated at a reverse proxy, tell Django that HTTPS is in use.
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -194,9 +193,8 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 
-# Simple in-memory cache used by the custom rate-limit decorator. On a single
-# PythonAnywhere worker this is enough; for multi-worker scaling, switch to
-# Memcached or Redis and point this setting there.
+# Simple in-memory cache used by the custom rate-limit decorator.
+# For multi-worker scaling, switch to Memcached or Redis.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -221,7 +219,7 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "humanizer:workspace"
 LOGOUT_REDIRECT_URL = "pages:home"
 
-# Email backend for alerts. Console backend is fine for local/PythonAnywhere demo;
+# Email backend for alerts. Console backend is fine locally;
 # replace with a real SMTP backend before production.
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@chanhumanized.local")

@@ -64,8 +64,7 @@ class EmailLogoutView(LogoutView):
 class ConsolePasswordResetView(PasswordResetView):
     """
     Standard Django reset flow, but disabled for permanently-locked accounts.
-    Email is printed to the server console (EMAIL_BACKEND is console) so the
-    PythonAnywhere demo still works.
+    Email is printed to the server console (EMAIL_BACKEND is console).
     """
 
     template_name = "accounts/password_reset.html"
