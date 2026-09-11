@@ -131,17 +131,61 @@ def similarity(a, b):
     return SequenceMatcher(None, a.split(), b.split()).ratio()
 
 
+def _consecutive_very_short(text, threshold=6):
+    """Count the number of very short sentences that appear back-to-back."""
+    counts = _sentence_word_counts(text)
+    runs = 0
+    current_run = 0
+    for c in counts:
+        if c < threshold:
+            current_run += 1
+        else:
+            if current_run > 1:
+                runs += current_run
+            current_run = 0
+    if current_run > 1:
+        runs += current_run
+    return runs
+
+
+def sentence_length_std(text):
+    """Standard deviation of sentence word counts; higher means more variation."""
+    counts = _sentence_word_counts(text)
+    if len(counts) < 2:
+        return 0
+    mean = sum(counts) / len(counts)
+    variance = sum((c - mean) ** 2 for c in counts) / len(counts)
+    return variance ** 0.5
+
+
+def sentence_starter_diversity(text):
+    """Count unique first words across sentences. Humans vary starters more than AI text."""
+    sentences = _sentences(text)
+    if not sentences:
+        return 0
+    starters = set()
+    for s in sentences:
+        words = _words(s)
+        if words:
+            first = words[0].lower().strip(".,!?;:'\"")
+            if first:
+                starters.add(first)
+    return len(starters)
+
+
 def score_candidate(text):
     """
     Return a higher-is-better score for a human-style rewrite candidate.
 
     The score rewards:
-    - short, uneven sentences (average 12-18, max under 20)
+    - short, uneven sentence length (average ~13, max under 22)
     - several very short sentences (< 6 words)
     - short average word length
     - high function-word ratio
     - some natural repetition
-    It penalizes banned AI phrases, long words, and sentences that are too long.
+    - varied sentence starters
+    It penalizes banned AI phrases, long words, excessive consecutive short
+    sentences (choppiness), and sentences that are too long.
     """
     avg_sent = avg_sentence_length(text)
     max_sent = max_sentence_length(text)
@@ -152,26 +196,42 @@ def score_candidate(text):
     banned = banned_phrase_count(text)
     long_ratio = long_word_ratio(text)
     sentence_count = len(_sentences(text))
+    choppy_runs = _consecutive_very_short(text)
+    burstiness = sentence_length_std(text)
+    starter_diversity = sentence_starter_diversity(text)
 
     score = 100
 
-    # Target average sentence length ~15 words (midpoint of 12-18).
-    score -= abs(avg_sent - 15) * 3
+    # Target average sentence length ~13 words (midpoint of 10-16).
+    score -= abs(avg_sent - 13) * 3
 
-    # Hard cap: no sentence over 20 words.
-    if max_sent > 20:
-        score -= (max_sent - 20) * 3 + 30
+    # Hard cap: no sentence over 22 words.
+    if max_sent > 22:
+        score -= (max_sent - 22) * 4 + 25
 
-    # Reward punchy 1-5 word sentences.
-    score += very_short * 12
+    # Reward punchy 1-5 word sentences, but cap the reward so the model
+    # does not turn the text into an unreadable fragment list.
+    score += min(very_short, 4) * 10
 
     # Prefer a mix where at least half the sentences are under 12 words.
     if sentence_count > 0:
         short_count = sum(1 for c in _sentence_word_counts(text) if c < 12)
-        if short_count / sentence_count >= 0.5:
-            score += 15
+        short_ratio = short_count / sentence_count
+        if short_ratio >= 0.5:
+            score += 18
         else:
-            score -= 10
+            score -= 12
+
+    # Penalize back-to-back very short sentences so the output does not
+    # turn into a staccato fragment list.
+    score -= choppy_runs * 5
+
+    # Reward natural burstiness, but not so much that the model ignores the
+    # short-sentence target. A healthy std dev for this domain is 4-8 words.
+    score += min(burstiness, 8) * 2
+
+    # Reward varied sentence starters. Humans rarely open every sentence the same way.
+    score += min(starter_diversity, 6) * 3
 
     # Short words feel more spoken. Target average ~5.0 characters.
     score -= avg_word * 8

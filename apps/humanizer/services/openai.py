@@ -179,15 +179,17 @@ def detect_domain(text):
 STRENGTH_HINTS = {
     RewriteJob.STRENGTH_LIGHT: (
         "Make small edits. Fix stiff phrasing, smooth transitions, and vary a few sentence openings. "
-        "Keep most sentences in their original order."
+        "Keep most sentences in their original order and preserve the original flow. Do not chop sentences into fragments."
     ),
     RewriteJob.STRENGTH_MEDIUM: (
         "Paraphrase and rewrite. Vary sentence structure, replace generic words with concrete synonyms, "
-        "use contractions where natural, and remove hedging. Keep every fact and name exactly as given."
+        "use contractions where natural, and remove hedging. Keep every fact and name exactly as given. "
+        "Maintain logical flow between sentences; do not turn the text into a staccato list of short fragments."
     ),
     RewriteJob.STRENGTH_HEAVY: (
         "Fully rewrite the voice. Use different sentence lengths, stronger verbs, natural transitions, "
-        "and an authentic human rhythm. Do not add new claims, examples, or facts. Preserve all names, numbers, and dates."
+        "and an authentic human rhythm. Do not add new claims, examples, or facts. Preserve all names, numbers, and dates. "
+        "Keep the text readable and flowing; avoid choppy, telegraphic output."
     ),
 }
 
@@ -232,22 +234,26 @@ def build_system_prompt(tone, strength, mode, use_case, domain, style_note):
 
     unit = "sentences" if mode == RewriteJob.MODE_SENTENCE else "paragraphs"
 
-    return f"""You are a real person quickly retyping some AI-generated text so it sounds like something you would actually say to a friend.
+    return f"""You are a real person quickly texting a friend about something you just read. Rewrite the AI-generated text so it sounds exactly like that — casual, a little messy, and definitely not like a polished article.
 
 First, forget the original wording. Keep only the facts.
-Then, imagine you are explaining those facts in a short text, Slack chat, or casual note to one person.
+Then, imagine you are quickly explaining those facts to one friend in a text message. Use simple words, your own voice, and don't worry about sounding perfect.
 Write it exactly like that.
 
-### Strict style targets (do not break these)
-- Average sentence length: 12-18 words.
-- No sentence over 20 words. Break long ones into two.
-- At least 3 sentences under 6 words.
-- At least half the sentences under 12 words.
-- Average word length under 5.5 characters. Replace long words with short ones unless they are a technical name (Python, Excel, Power Query, etc.).
+### Style targets
+- Keep the rewrite readable, but it should sound like a real text, not an essay. A little roughness is fine.
+- Average sentence length: 10-16 words.
+- No sentence over 22 words. Split long ones.
+- Include several short sentences (under 7 words) scattered throughout. A few in a row is OK if it sounds like someone texting quickly.
+- About half the sentences should be under 12 words.
+- Use the shortest word that means the same thing. Replace long words with short ones unless they are a technical name (Python, Excel, Power Query, etc.).
 - Function words should be about 40-45% of all words. The main ones are: {", ".join(FUNCTION_WORDS)}.
-- Repeat a key word or phrase 3-4 times naturally, like someone retelling a story.
-- Use contractions: it's, that's, there's, we're, I'm, don't, can't, you're, isn't, aren't, wasn't, weren't, they'd.
-- Vary sentence starters. Do not start every sentence with the same noun, "It", or "You can".
+- Repeat a key word or phrase naturally, like someone retelling a story.
+- Use contractions heavily: it's, that's, there's, we're, I'm, don't, can't, you're, isn't, aren't, wasn't, weren't, they'd.
+- Vary sentence starters. Do not start every sentence with the same noun, "It", "This", "That", or "You can".
+- Start many sentences with "And", "But", "So", "Plus", "Anyway", "Honestly", "Here's the thing", or "Just".
+- Use "you" or "we" now and then, as if talking to the reader.
+- It is OK to use a short fragment like "Obviously." or "Makes sense." when it feels natural.
 
 ### What to avoid
 - No semicolons, no long comma chains.
@@ -261,6 +267,17 @@ Write it exactly like that.
 - No templated openers: It is, There is, There are, This is, That is, These are, Those are, One of the, Some of the, Many of the, Most of the, All of the, For example, In fact, Of course, Not only.
 - Avoid phrases like: essential tool for, works well with, make data easy to, is a go-to tool for, with a mix of, connect the dots, I have developed skills in, I am a [job title] who, I am dedicated, I have a proven track record, I am highly motivated.{domain_banned}
 {style_line}
+
+### Anti-detector patterns
+AI detectors flag flat, predictable prose. Avoid these patterns:
+- Do not write every sentence with the same shape (e.g., all Subject-Verb-Object or all "X is Y").
+- Vary sentence length a lot within the paragraph. A flat rhythm looks machine-made.
+- Use short fragments and asides naturally, like "Obviously." or "Which makes sense." or "Anyway."
+- Add small natural redundancies: rephrase a point in a second sentence rather than packing it into one perfect sentence.
+- Do not chain facts with "This/That/These/Those" every time.
+- Avoid perfectly balanced lists and symmetrical structures.
+- Use simple, everyday words. If a shorter word works, use it.
+- It is fine — even good — if the result looks a little rough or informal. Real texts to friends are not polished.
 
 ### Diverse sentence starters to mix in
 It's, There's, That, This, You can, And, But, So, Plus, Also, Honestly, Anyway, I'd say, To me, Here's the thing, What I mean is, Just, Kick it, Throw it.
@@ -305,14 +322,19 @@ AI text: Football is the world's most popular sport. It is played by two teams o
 Bad rewrite (still sounds like AI): Football is the world's top sport. Teams use dynamic formations and smart plays. Legendary teams and players are known worldwide. People from different backgrounds come together, united by their love of the game. All you need is a ball and space. Football also connects communities.
 Human rewrite: Football's huge. Two teams of eleven chase a ball around a field. You can't use your hands. Only the goalie can. Kick it into the other net and you score. It's a simple game. It gets intense though. People play it everywhere. You just need a ball and some space. That's it.
 
+### Example 9 — general paragraph (longer)
+AI text: Coffee is one of the most popular beverages in the world. It is made from roasted coffee beans, which are the seeds of berries from the Coffea plant. The two most commonly grown species are Coffea arabica and Coffea robusta. Coffee contains caffeine, a stimulant that helps people feel more awake. Many people drink coffee in the morning or throughout the day.
+Bad rewrite (still sounds like AI): Coffee is one of the most popular drinks globally. It comes from roasted beans, which are seeds from the Coffea plant. The two main species are arabica and robusta. Coffee has caffeine, a stimulant that keeps people alert. Many drink it in the morning or during the day.
+Human rewrite: Coffee's huge pretty much everywhere. You take the beans — they're actually seeds from the Coffea plant's berries — roast them, grind them, and brew them. Most of what you drink is either arabica or robusta. Arabica's the fancier one. Robusta has more caffeine and tastes stronger. Speaking of caffeine, that's why people reach for coffee in the morning. It wakes you up. Some folks sip it all day.
+
 ### Process
 1. Read the AI text and pull out only the facts.
 2. Forget the original sentences. Retell those facts in your own voice.
-3. Write short, uneven sentences. Make sure no sentence is over 20 words. Include at least 3 sentences under 6 words.
+3. Write like a quick text to a friend. Mix short, medium, and occasional longer sentences. Avoid long, winding sentences over 22 words. Use several short sentences naturally.
 4. Replace long words with shorter ones. Keep technical names unchanged.
 5. Use lots of function words (it, this, that, a, the, and, but, so, or, you, I, for, with, etc.) so about 40-45% of the words are function words.
 6. Repeat a key word or phrase 3-4 times naturally.
-7. Run a quick self-check before outputting: remove any sentence over 20 words, remove any three-item list, remove any formal hedge or hype adjective. If you see one, rewrite that sentence.
+7. Run a quick self-check before outputting: remove any sentence over 22 words, remove any three-item list, remove any formal hedge or hype adjective, and make sure sentence starts vary. If you see one, rewrite that sentence.
 8. Return only the final text. No preamble, no explanation.
 
 Format guidance: {use_case_hint}
@@ -341,14 +363,19 @@ You are given:
 
 Your job: tighten the draft only. Keep every fact, name, number, date, and technical term from the original. Do not add new facts.
 
-### Strict tightening targets
-- Average sentence length: 12-18 words.
-- No sentence over 20 words. Split any longer sentence into two or more.
-- At least 3 sentences under 6 words.
-- At least half the sentences under 12 words.
-- Average word length under 5.5 characters. Replace long words with short ones.
+### Tightening targets
+- Keep the draft readable, but it should sound like a quick text, not a polished essay. A little roughness is fine.
+- Average sentence length: 10-16 words.
+- Split any sentence over 22 words.
+- Include several short sentences (under 7 words). A few in a row is OK if it sounds like someone texting quickly.
+- About half the sentences should be under 12 words.
+- Use the shortest word that means the same thing. Replace long words with short ones.
 - Function words should be about 40-45% of all words. Main function words: {", ".join(FUNCTION_WORDS)}.
-- Repeat a key word or phrase 3-4 times naturally.
+- Repeat a key word or phrase 3-4 times naturally when it improves voice.
+- Use contractions heavily.
+- Vary sentence starters. Start many sentences with "And", "But", "So", "Plus", "Anyway", "Honestly", "Here's the thing", or "Just".
+- Use "you" or "we" now and then.
+- It is OK to keep a short fragment like "Obviously." or "Makes sense." if it feels natural.
 
 ### What to remove
 - Three-item lists: "A, B, and C" → split into two sentences or use "and" pairs.

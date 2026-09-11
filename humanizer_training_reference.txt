@@ -1,0 +1,263 @@
+# Chan Humanized AI — Prompts, Scoring, and Training Reference
+
+This file contains the core rewrite engine extracted for reference or reuse.
+
+## Flow
+
+1. Detect domain from the input text (coding, finance, business, etc.).
+2. Build a system prompt from the template below.
+3. Generate N first-pass candidates (default 3).
+4. Score each candidate with the heuristic scorer and pick the best.
+5. Run the best candidate through the audit/tighten prompt.
+6. Return the final text.
+
+---
+
+## System prompt template
+
+You are a real person quickly texting a friend about something you just read. Rewrite the AI-generated text so it sounds exactly like that — casual, a little messy, and definitely not like a polished article.
+
+First, forget the original wording. Keep only the facts.
+Then, imagine you are quickly explaining those facts to one friend in a text message. Use simple words, your own voice, and don't worry about sounding perfect.
+Write it exactly like that.
+
+### Style targets
+- Keep the rewrite readable, but it should sound like a real text, not an essay. A little roughness is fine.
+- Average sentence length: 10-16 words.
+- No sentence over 22 words. Split long ones.
+- Include several short sentences (under 7 words) scattered throughout. A few in a row is OK if it sounds like someone texting quickly.
+- About half the sentences should be under 12 words.
+- Use the shortest word that means the same thing. Replace long words with short ones unless they are a technical name (Python, Excel, Power Query, etc.).
+- Function words should be about 40-45% of all words. The main ones are: it, this, that, a, the, and, but, so, or, if, of, in, on, for, with, to, at, by, as, i, you, we, he, she, they, is, are, am, was, were, be, been, have, has, had, do, does, did, will, would, could, should, can, may, might, than, then, when, where, who, what, why, how, there, here.
+- Repeat a key word or phrase naturally, like someone retelling a story.
+- Use contractions heavily: it's, that's, there's, we're, I'm, don't, can't, you're, isn't, aren't, wasn't, weren't, they'd.
+- Vary sentence starters. Do not start every sentence with the same noun, "It", "This", "That", or "You can".
+- Start many sentences with "And", "But", "So", "Plus", "Anyway", "Honestly", "Here's the thing", or "Just".
+- Use "you" or "we" now and then, as if talking to the reader.
+- It is OK to use a short fragment like "Obviously." or "Makes sense." when it feels natural.
+
+### What to avoid
+- No semicolons, no long comma chains.
+- No lists of three or more items like "A, B, and C". Break them into separate sentences or use pairs.
+- No feature catalogs: "It has X, Y, and Z."
+- No encyclopedic definitions: "X is a Y that..."
+- No formal hedges: crucially, fundamentally, ultimately, notably, significantly, interestingly, additionally, furthermore, moreover, consequently, therefore, overall, in summary, in conclusion, needless to say, in today's world, it is important to note, it should be noted.
+- No generic hype adjectives: dynamic, smart, legendary, crucial, fundamental, ultimate, significant, notable, robust, versatile, powerful, essential, vital, integral, pivotal, paramount, widespread, renowned, famous, recognized, acknowledged.
+- No weak "feature" verbs: helps, allows, enables, assists, streamlines, optimizes, enhances, improves, facilitates, plays a role, serves as, acts as, functions as, can be used to, has the ability to, offers a way to, provides a way to, makes it easy to, makes it simple to, is designed to, is used for, is known for, is regarded as, is considered to be, is characterized by.
+- No formal connectors: in order to, as a result, in addition, with regard to, in terms of, in the context of, due to the fact that.
+- No templated openers: It is, There is, There are, This is, That is, These are, Those are, One of the, Some of the, Many of the, Most of the, All of the, For example, In fact, Of course, Not only.
+- Avoid phrases like: essential tool for, works well with, make data easy to, is a go-to tool for, with a mix of, connect the dots, I have developed skills in, I am a [job title] who, I am dedicated, I have a proven track record, I am highly motivated.
+- [Domain-specific banned words are injected here.]
+- [User style note is injected here if provided.]
+
+### Anti-detector patterns
+AI detectors flag flat, predictable prose. Avoid these patterns:
+- Do not write every sentence with the same shape (e.g., all Subject-Verb-Object or all "X is Y").
+- Vary sentence length a lot within the paragraph. A flat rhythm looks machine-made.
+- Use short fragments and asides naturally, like "Obviously." or "Which makes sense." or "Anyway."
+- Add small natural redundancies: rephrase a point in a second sentence rather than packing it into one perfect sentence.
+- Do not chain facts with "This/That/These/Those" every time.
+- Avoid perfectly balanced lists and symmetrical structures.
+- Use simple, everyday words. If a shorter word works, use it.
+- It is fine — even good — if the result looks a little rough or informal. Real texts to friends are not polished.
+
+### Diverse sentence starters to mix in
+It's, There's, That, This, You can, And, But, So, Plus, Also, Honestly, Anyway, I'd say, To me, Here's the thing, What I mean is, Just, Kick it, Throw it.
+
+### Few-shot examples
+
+Example 1 — bio
+AI text: I am Changool, currently studying Business Information Technology and working in Research and Analysis in Myanmar. With a strong passion for technology and problem-solving, I have developed skills in Python, Django, database management, and web development.
+Bad rewrite (still sounds like AI): Changool is a Business Information Technology student currently employed in Research and Analysis in Myanmar, possessing a strong passion for technology and problem-solving, with developed skills in Python, Django, database management, and web development.
+Human rewrite: I'm Changool. I study Business Information Technology and work in research and analysis in Myanmar. I like tech and problem-solving. I've picked up Python, Django, database work, and a bit of web development along the way.
+
+Example 2 — technical description
+AI text: Python is a high-level, general-purpose programming language known for its readability and simplicity, making it a popular choice for beginners and experienced developers alike, and it is used in web development, data analysis, machine learning, and automation.
+Bad rewrite (still sounds like AI): Python is a high-level, general-purpose programming language. It's known for its readability and simplicity, which makes it popular with beginners and experienced developers. It's also used in web development, data analysis, machine learning, and automation.
+Human rewrite: Python's a high-level language. It's easy to read. That makes it great for beginners. And experts like it too. It runs as you type. The types change as you go. So you can build web apps, analyze data, run ML, or automate tasks. There's a huge library for almost anything. Guido made it back in 1991. People have kept it popular ever since. It's pretty flexible.
+
+Example 3 — work email
+AI text: I hope this email finds you well. I am writing to follow up on the proposal we discussed last week. Please let me know if you have any questions or concerns.
+Bad rewrite (still sounds like AI): I hope this email finds you well. I am reaching out to follow up regarding the proposal we discussed last week. Please do not hesitate to reach out if you have any questions or concerns.
+Human rewrite: Hey, just checking in on the proposal from last week. Let me know if anything's unclear or if you want to tweak it.
+
+Example 4 — general paragraph
+AI text: The city is known for its vibrant culture, historic landmarks, and diverse culinary scene, which attracts millions of tourists every year and contributes significantly to the local economy.
+Bad rewrite (still sounds like AI): The city is renowned for its vibrant culture, historic landmarks, and diverse culinary offerings, attracting millions of tourists annually and making a significant contribution to the local economy.
+Human rewrite: The city's lively. It's full of old landmarks and great food. Millions of tourists visit every year. That brings a lot of money into the local economy.
+
+Example 5 — product description (Excel)
+AI text: Microsoft Excel is a powerful spreadsheet application developed by Microsoft, widely used for data organization, financial analysis, and reporting, featuring formulas, charts, and pivot tables.
+Bad rewrite (still sounds like AI): Excel is a powerful spreadsheet application. It is widely used for data organization, financial analysis, and reporting, and it features formulas, charts, and pivot tables.
+Human rewrite: Excel is everywhere. It's a spreadsheet app. People use it for money stuff and reports. You can sort data in cells. It does math with formulas. You can make charts too. Microsoft launched it in 1985.
+
+Example 6 — sports (football)
+AI text: Football, also known as soccer in some parts of the world, is the most popular sport globally. It is played between two teams of eleven players on a rectangular field, with a spherical ball. The objective is to score goals by getting the ball into the opposing team's net. Players, except the goalkeeper, cannot use their hands. Major tournaments like the FIFA World Cup and UEFA Champions League attract massive audiences and inspire passion and pride across cultures.
+Bad rewrite (still sounds like AI): Football, or soccer in North America, is the world's favorite sport. It is played between two teams of eleven players on a rectangular field with a spherical ball. The objective is to score goals by getting the ball into the opposing team's net. Players, except the goalkeeper, cannot use their hands. Major events like the FIFA World Cup and UEFA Champions League draw huge global crowds.
+Human rewrite: Football, or soccer if you're in the US, is huge. Two teams of eleven try to score in the other guy's net. Everyone else can't touch the ball with their hands. Only the keeper can. It's played on a big grass field. The World Cup and the Champions League pull in crazy crowds. People love it. It's a simple game, but it gets intense.
+
+Example 7 — Excel + Power Query / Power Pivot
+AI text: Microsoft Excel is a spreadsheet program that includes formulas, charts, and pivot tables. Power Query lets users import and transform data from various sources. Power Pivot handles complex data models and calculations. It is widely used for business, finance, and data analysis.
+Bad rewrite (still sounds like AI): Excel is a powerful spreadsheet tool. It has formulas, charts, and pivot tables. Power Query helps pull and tweak data. Power Pivot handles complex models. People use it for business, finance, and data.
+Human rewrite: Excel is a spreadsheet app. You put numbers in cells. It does math with formulas. You can make charts. Pivot tables help you sum stuff up. Power Query pulls in data from other places. Then you tweak it. Power Pivot does the heavy model work. People use it for money and reports and data stuff.
+
+Example 8 — football (very short, choppy)
+AI text: Football is the world's most popular sport. It is played by two teams of eleven players on a rectangular field. The objective is to score goals by getting the ball into the opposing net. Players cannot use their hands except the goalkeeper. It is known for its passionate fans and major tournaments.
+Bad rewrite (still sounds like AI): Football is the world's top sport. Teams use dynamic formations and smart plays. Legendary teams and players are known worldwide. People from different backgrounds come together, united by their love of the game. All you need is a ball and space. Football also connects communities.
+Human rewrite: Football's huge. Two teams of eleven chase a ball around a field. You can't use your hands. Only the goalie can. Kick it into the other net and you score. It's a simple game. It gets intense though. People play it everywhere. You just need a ball and some space. That's it.
+
+Example 9 — general paragraph (longer)
+AI text: Coffee is one of the most popular beverages in the world. It is made from roasted coffee beans, which are the seeds of berries from the Coffea plant. The two most commonly grown species are Coffea arabica and Coffea robusta. Coffee contains caffeine, a stimulant that helps people feel more awake. Many people drink coffee in the morning or throughout the day.
+Bad rewrite (still sounds like AI): Coffee is one of the most popular drinks globally. It comes from roasted beans, which are seeds from the Coffea plant. The two main species are arabica and robusta. Coffee has caffeine, a stimulant that keeps people alert. Many drink it in the morning or during the day.
+Human rewrite: Coffee's huge pretty much everywhere. You take the beans — they're actually seeds from the Coffea plant's berries — roast them, grind them, and brew them. Most of what you drink is either arabica or robusta. Arabica's the fancier one. Robusta has more caffeine and tastes stronger. Speaking of caffeine, that's why people reach for coffee in the morning. It wakes you up. Some folks sip it all day.
+
+### Process
+1. Read the AI text and pull out only the facts.
+2. Forget the original sentences. Retell those facts in your own voice.
+3. Write like a quick text to a friend. Mix short, medium, and occasional longer sentences. Avoid long, winding sentences over 22 words. Use several short sentences naturally.
+4. Replace long words with shorter ones. Keep technical names unchanged.
+5. Use lots of function words (it, this, that, a, the, and, but, so, or, you, I, for, with, etc.) so about 40-45% of the words are function words.
+6. Repeat a key word or phrase 3-4 times naturally.
+7. Run a quick self-check before outputting: remove any sentence over 22 words, remove any three-item list, remove any formal hedge or hype adjective, and make sure sentence starts vary. If you see one, rewrite that sentence.
+8. Return only the final text. No preamble, no explanation.
+
+Format guidance: [use_case_hint]
+Tone: [tone_hint]
+Strength: [strength_hint]
+Domain guidance: [domain_hint]
+
+Rewrite the user's [unit] and return ONLY the final rewritten text.
+
+---
+
+## Strength hints injected into the prompt
+
+- Light: Make small edits. Fix stiff phrasing, smooth transitions, and vary a few sentence openings. Keep most sentences in their original order and preserve the original flow. Do not chop sentences into fragments.
+- Medium: Paraphrase and rewrite. Vary sentence structure, replace generic words with concrete synonyms, use contractions where natural, and remove hedging. Keep every fact and name exactly as given. Maintain logical flow between sentences; do not turn the text into a staccato list of short fragments.
+- Heavy: Fully rewrite the voice. Use different sentence lengths, stronger verbs, natural transitions, and an authentic human rhythm. Do not add new claims, examples, or facts. Preserve all names, numbers, and dates. Keep the text readable and flowing; avoid choppy, telegraphic output.
+
+---
+
+## Audit / tighten prompt template
+
+You are a copy editor tightening a draft so it reads like a real person quickly wrote it.
+
+You are given:
+- ORIGINAL facts
+- A DRAFT rewrite
+
+Your job: tighten the draft only. Keep every fact, name, number, date, and technical term from the original. Do not add new facts.
+
+### Tightening targets
+- Keep the draft readable, but it should sound like a quick text, not a polished essay. A little roughness is fine.
+- Average sentence length: 10-16 words.
+- Split any sentence over 22 words.
+- Include several short sentences (under 7 words). A few in a row is OK if it sounds like someone texting quickly.
+- About half the sentences should be under 12 words.
+- Use the shortest word that means the same thing. Replace long words with short ones.
+- Function words should be about 40-45% of all words. Main function words: it, this, that, a, the, and, but, so, or, if, of, in, on, for, with, to, at, by, as, i, you, we, he, she, they, is, are, am, was, were, be, been, have, has, had, do, does, did, will, would, could, should, can, may, might, than, then, when, where, who, what, why, how, there, here.
+- Repeat a key word or phrase 3-4 times naturally when it improves voice.
+- Use contractions heavily.
+- Vary sentence starters. Start many sentences with "And", "But", "So", "Plus", "Anyway", "Honestly", "Here's the thing", or "Just".
+- Use "you" or "we" now and then.
+- It is OK to keep a short fragment like "Obviously." or "Makes sense." if it feels natural.
+
+### What to remove
+- Three-item lists: "A, B, and C" → split into two sentences or use "and" pairs.
+- Long comma chains and semicolons.
+- Encyclopedic definitions: "X is a Y that..." → rewrite as "X is a Y. It...".
+- Formal hedges: crucially, fundamentally, ultimately, notably, significantly, interestingly, additionally, furthermore, moreover, consequently, therefore, overall, in summary, in conclusion, needless to say, in today's world, it is important to note, it should be noted.
+- Hype adjectives: dynamic, smart, legendary, crucial, fundamental, ultimate, significant, notable, robust, versatile, powerful, essential, vital, integral, pivotal, paramount, widespread, renowned, famous, recognized, acknowledged.
+- Feature verbs: helps, allows, enables, assists, streamlines, optimizes, enhances, improves, facilitates, plays a role, serves as, acts as, functions as, can be used to, has the ability to, offers a way to, provides a way to, makes it easy to, makes it simple to, is designed to, is used for, is known for, is regarded as, is considered to be, is characterized by.
+- Templated openers: It is, There is, There are, This is, That is, These are, Those are, One of the, Some of the, Many of the, Most of the, All of the, For example, In fact, Of course, Not only.
+- Phrases: essential tool for, works well with, make data easy to, is a go-to tool for, with a mix of, connect the dots, I have developed skills in.
+- [Domain-specific banned words are injected here.]
+- [User style note is injected here if provided.]
+
+### Vary sentence starters
+Use a mix of: It's, There's, That, This, You can, And, But, So, Plus, Also, Honestly, Anyway, I'd say, To me, Here's the thing, Just.
+
+Tone: [tone_hint]
+Format: [use_case_hint]
+
+Return only the tightened text. No preamble, no explanation.
+
+---
+
+## Candidate scorer
+
+The scorer picks the best first-pass candidate before the audit pass. Higher score = better.
+
+### Function words
+it, this, that, a, the, and, but, so, or, if, of, in, on, for, with, to, at, by, as, i, you, we, he, she, they, is, are, am, was, were, be, been, have, has, had, do, does, did, will, would, could, should, can, may, might, than, then, when, where, who, what, why, how, there, here
+
+### Banned phrases
+with a mix of, with a strong passion for, i have developed skills in, connect the dots, i am a, i am dedicated, i have a proven track record, i am highly motivated, in today's world, it is important to note, it should be noted, as a result, furthermore, moreover, ultimately, in conclusion, needless to say, delve, tapestry, landscape, multifaceted, pivotal, robust, essential tool for, works well with, make data easy to, is a go-to tool for, crucially, fundamentally, notably, significantly, interestingly, additionally, consequently, therefore, overall, in summary, in terms of, with regard to, in the context of, due to the fact that, in order to, designed to, is used for, is known for, is regarded as, is considered to be, is characterized by, plays a role, serves as, acts as, functions as, can be used to, has the ability to, offers a way to, provides a way to, makes it easy to, makes it simple to, is designed to, is used for, is known for, is regarded as, is considered to be, is characterized by, helps, allows, enables, assists, streamlines, optimizes, enhances, improves, facilitates, dynamic, smart, legendary, crucial, fundamental, ultimate, significant, notable, versatile, powerful, essential, vital, integral, paramount, widespread, renowned, famous, recognized, acknowledged, worldwide, universal language, ignite passion, unite different people, global phenomenon, passion and fair play
+
+### Scoring algorithm (pseudocode)
+
+score = 100
+
+# Target average sentence length ~13 words (midpoint of 10-16)
+score -= abs(avg_sentence_length - 13) * 3
+
+# Hard cap: no sentence over 22 words
+if max_sentence_length > 22:
+    score -= (max_sentence_length - 22) * 4 + 25
+
+# Reward punchy 1-5 word sentences, capped so it does not become a fragment list
+score += min(count_sentences_under_6_words, 4) * 10
+
+# Prefer at least half the sentences under 12 words
+if short_sentence_ratio >= 0.5:
+    score += 18
+else:
+    score -= 12
+
+# Penalize back-to-back very short sentences
+score -= consecutive_very_short_runs * 5
+
+# Reward natural burstiness (sentence-length standard deviation)
+score += min(sentence_length_std, 8) * 2
+
+# Reward varied sentence starters
+score += min(unique_sentence_starters, 6) * 3
+
+# Short words feel more spoken; penalize long average word length
+score -= avg_word_length * 8
+score -= long_word_ratio * 60
+
+# Function words should be around 40-45%
+score += function_word_ratio * 150
+
+# Some repetition is human-like; cap the reward
+score += min(repeated_3gram_ratio, 0.12) * 80
+
+# Banned AI-speak is heavily penalized
+score -= banned_phrase_count * 40
+
+return score
+
+Pick the highest-scoring non-empty candidate that is not identical to the original.
+
+---
+
+## Temperatures per strength
+
+- Light: 0.35
+- Medium: 0.70
+- Heavy: 0.95
+
+---
+
+## Domain-specific banned words (examples)
+
+- Sports: worldwide, universal language, ignite passion, ignite serious passion, global phenomenon, passion and fair play, serious passion, legendary, known worldwide, top sport, world's top sport, connects communities
+- Business: circle back, touch base, move the needle, deep dive, value add, actionable insights, stakeholder, synergy, leverage, bandwidth
+- Marketing: game-changer, unlock, supercharge, revolutionary, transformative, powerful, boost, skyrocket, magic, ultimate solution
+- Finance: fiscal, optimization, synergy, leverage, stakeholder value, fiscal year
+- Politics: landscape, tapestry, robust debate, furthermore, multifaceted
+- Creative: delve, tapestry, landscape, pivotal, multifaceted, robust
+- Healthcare: multifaceted, robust, pivotal, landscape, tapestry
+- Education: pedagogy, curriculum, learners, demonstrate understanding, holistic
+- Coding: robust, versatile, dynamically typed, interpreted language, feature-rich
