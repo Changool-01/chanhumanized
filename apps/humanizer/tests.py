@@ -269,6 +269,23 @@ class ScoringTests(TestCase):
         best = pick_best_candidate([dense, choppy], original)
         self.assertEqual(best, choppy)
 
+    def test_encyclopedic_sports_scores_lower_than_human_draft(self):
+        """Wiki-style sports copy scores lower than a varied human-style rewrite."""
+        wiki = (
+            "Football is a very popular team sport played worldwide. "
+            "It is played between two teams of eleven players on a rectangular field. "
+            "The objective is to score goals by getting the ball into the opposing net."
+        )
+        human = (
+            "People play football in parks and stadiums everywhere. "
+            "Two sides of eleven chase one ball. "
+            "You're trying to put it in the other net — hands off limits unless you're the keeper."
+        )
+        self.assertGreater(
+            score_candidate(human, original=wiki),
+            score_candidate(wiki, original=wiki),
+        )
+
     def test_domain_banned_helpers_are_nonempty(self):
         """Domain hint and banned-phrase helpers cover the new domains."""
         from apps.humanizer.services.openai import DOMAIN_HINTS, DOMAIN_BANNED

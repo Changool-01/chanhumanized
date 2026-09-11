@@ -29,7 +29,10 @@ TONE_HINTS = {
 }
 
 USE_CASE_HINTS = {
-    RewriteJob.USE_CASE_GENERAL: "General writing. Keep it natural and readable.",
+    RewriteJob.USE_CASE_GENERAL: (
+        "General writing. Keep it natural and readable. If the input looks like a school essay "
+        "or wiki article, rewrite in clear paragraphs with a human voice — never encyclopedic leads."
+    ),
     RewriteJob.USE_CASE_EMAIL: "A workplace email. Keep it concise, polite, and actionable. Do not invent a subject line; only rewrite the body.",
     RewriteJob.USE_CASE_LINKEDIN: "A LinkedIn post or professional update. Keep it punchy, first-person, and easy to scan.",
     RewriteJob.USE_CASE_REPORT: "A short work report. Keep it factual, direct, and organized. Bullet points are fine if they help clarity.",
@@ -55,6 +58,10 @@ DOMAIN_BANNED = {
         "worldwide", "universal language", "unite different people", "ignite passion",
         "ignite serious passion", "global phenomenon", "passion and fair play", "serious passion",
         "legendary", "known worldwide", "top sport", "world's top sport", "connects communities",
+        "also known as", "team sport", "rectangular field", "spherical ball", "objective is to",
+        "played between two teams", "very popular sport", "throughout history", "dates back to",
+        "millions of fans", "attracts millions", "contributes significantly", "rich history",
+        "in ancient times", "across cultures", "universal appeal",
     ],
     RewriteJob.DOMAIN_BUSINESS: [
         "circle back", "touch base", "move the needle", "deep dive", "value add",
@@ -176,6 +183,27 @@ def detect_domain(text):
     return best_domain
 
 
+TONE_PERSONA = {
+    RewriteJob.TONE_CASUAL: (
+        "You are a real person quickly texting a friend about something you just read. "
+        "Rewrite so it sounds like that — casual, a little messy, not like a polished article."
+    ),
+    RewriteJob.TONE_CONVERSATIONAL: (
+        "You are explaining this to one reader in a friendly voice, like a podcast host "
+        "or a blog post you'd actually publish — clear, warm, not stiff or encyclopedic."
+    ),
+    RewriteJob.TONE_PROFESSIONAL: (
+        "You are a colleague rewriting a draft email or memo — direct, plain English, "
+        "no corporate filler and no textbook tone."
+    ),
+    RewriteJob.TONE_ACADEMIC: (
+        "You are a college student rewriting your own essay in your own words after class. "
+        "It should still read like a school assignment (clear paragraphs, real facts), but never "
+        "like Wikipedia, a textbook, or ChatGPT. No 'It is widely known' lead sentences."
+    ),
+}
+
+
 STRENGTH_HINTS = {
     RewriteJob.STRENGTH_LIGHT: (
         "Make small edits. Fix stiff phrasing, smooth transitions, and vary a few sentence openings. "
@@ -233,11 +261,12 @@ def build_system_prompt(tone, strength, mode, use_case, domain, style_note):
     style_line = f"\nStyle note from the user: {style_note}\nFollow it only if it does not conflict with the rules above." if style_note else ""
 
     unit = "sentences" if mode == RewriteJob.MODE_SENTENCE else "paragraphs"
+    persona = TONE_PERSONA.get(tone, TONE_PERSONA[RewriteJob.TONE_CONVERSATIONAL])
 
-    return f"""You are a real person quickly texting a friend about something you just read. Rewrite the AI-generated text so it sounds exactly like that — casual, a little messy, and definitely not like a polished article.
+    return f"""{persona}
 
 First, forget the original wording. Keep only the facts.
-Then, imagine you are quickly explaining those facts to one friend in a text message. Use simple words, your own voice, and don't worry about sounding perfect.
+Then retell those facts in your own voice. Use simple words. Do not polish into essay-bot or wiki-bot prose.
 Write it exactly like that.
 
 ### Style targets
@@ -269,15 +298,18 @@ Write it exactly like that.
 {style_line}
 
 ### Anti-detector patterns
-AI detectors flag flat, predictable prose. Avoid these patterns:
+AI detectors (including ZeroGPT-style tools) flag flat, predictable, encyclopedic prose. Avoid these patterns:
 - Do not write every sentence with the same shape (e.g., all Subject-Verb-Object or all "X is Y").
-- Vary sentence length a lot within the paragraph. A flat rhythm looks machine-made.
-- Use short fragments and asides naturally, like "Obviously." or "Which makes sense." or "Anyway."
-- Add small natural redundancies: rephrase a point in a second sentence rather than packing it into one perfect sentence.
+- Vary sentence length a lot within each paragraph. A flat rhythm looks machine-made.
+- Break wiki-style facts: not "Football is a team sport played on a rectangular field" — say who plays, what they do, what you'd see at a match.
+- Never stack paragraphs that each start with "Football is…", "The game…", "It is…", or "There are…".
+- Use short fragments and asides when the tone allows, like "Obviously." or "Which makes sense." or "Anyway."
+- Add small natural redundancies: rephrase a point in a second sentence rather than one perfect sentence.
 - Do not chain facts with "This/That/These/Those" every time.
-- Avoid perfectly balanced lists and symmetrical structures.
+- Avoid perfectly balanced lists, "not only… but also…", and symmetrical four-sentence paragraphs.
 - Use simple, everyday words. If a shorter word works, use it.
-- It is fine — even good — if the result looks a little rough or informal. Real texts to friends are not polished.
+- Swap passive facts for what people do: "players run", "fans travel", "teams line up" — not "the sport is characterized by".
+- It is fine if the result looks a little rough. Real human drafts are not perfectly balanced.
 
 ### Diverse sentence starters to mix in
 It's, There's, That, This, You can, And, But, So, Plus, Also, Honestly, Anyway, I'd say, To me, Here's the thing, What I mean is, Just, Kick it, Throw it.
@@ -327,6 +359,11 @@ AI text: Coffee is one of the most popular beverages in the world. It is made fr
 Bad rewrite (still sounds like AI): Coffee is one of the most popular drinks globally. It comes from roasted beans, which are seeds from the Coffea plant. The two main species are arabica and robusta. Coffee has caffeine, a stimulant that keeps people alert. Many drink it in the morning or during the day.
 Human rewrite: Coffee's huge pretty much everywhere. You take the beans — they're actually seeds from the Coffea plant's berries — roast them, grind them, and brew them. Most of what you drink is either arabica or robusta. Arabica's the fancier one. Robusta has more caffeine and tastes stronger. Speaking of caffeine, that's why people reach for coffee in the morning. It wakes you up. Some folks sip it all day.
 
+### Example 10 — multi-paragraph school essay (football / sports)
+AI text: Football is a very popular team sport played all over the world. It is played between two teams of eleven players on a large field. The objective is to score goals by getting the ball into the opposing team's net. Players cannot use their hands except for the goalkeeper. Football has a long history and major tournaments like the FIFA World Cup attract millions of viewers.
+Bad rewrite (still sounds like AI): Football is one of the most popular sports globally. It is played between two teams of eleven players on a rectangular field. The objective is to score by putting the ball in the opponent's net. Only the goalkeeper may use hands. The sport has a rich history, and events such as the FIFA World Cup draw massive international audiences.
+Human rewrite: People play football everywhere — parks, streets, proper stadiums. Two sides of eleven chase one ball. You're trying to put it in the other net. Hands are off limits unless you're the keeper. That's basically the whole game, which is wild when you think about how much money and noise surrounds it. The World Cup turns whole countries into living rooms for a month. Kids grow up copying pros they see on TV. The rules got formalized in England in the 1800s, but versions of kick-around games go way back. Tactics matter too — some teams press high, others sit deep — but at heart it's still twenty-two people and a ball.
+
 ### Process
 1. Read the AI text and pull out only the facts.
 2. Forget the original sentences. Retell those facts in your own voice.
@@ -355,13 +392,13 @@ def build_audit_prompt(tone, strength, mode, use_case, domain, style_note):
     domain_banned = _domain_banned_line(domain)
     style_line = f"\nStyle note from the user: {style_note}\nApply it only if it does not conflict with the tightening rules." if style_note else ""
 
-    return f"""You are a copy editor tightening a draft so it reads like a real person quickly wrote it.
+    return f"""You are a copy editor tightening a draft so it reads like a real person wrote it — not like Wikipedia, a textbook, or a detector-friendly essay bot.
 
 You are given:
 - ORIGINAL facts
 - A DRAFT rewrite
 
-Your job: tighten the draft only. Keep every fact, name, number, date, and technical term from the original. Do not add new facts.
+Your job: tighten the draft only. Keep every fact, name, number, date, and technical term from the original. Do not add new facts. Never make the tone more formal than the draft.
 
 ### Tightening targets
 - Keep the draft readable, but it should sound like a quick text, not a polished essay. A little roughness is fine.
@@ -390,6 +427,9 @@ Your job: tighten the draft only. Keep every fact, name, number, date, and techn
 
 ### Vary sentence starters
 Use a mix of: It's, There's, That, This, You can, And, But, So, Plus, Also, Honestly, Anyway, I'd say, To me, Here's the thing, Just.
+
+### Strip encyclopedic residue
+If any sentence still reads like a wiki line ("X is a Y played on…", "The objective is to…", "It is widely…", "also known as", "throughout history", "attracts millions"), rewrite that sentence into plain action or observation. Vary how each paragraph begins.
 
 Tone: {tone_hint}
 Format: {use_case_hint}
@@ -432,7 +472,7 @@ def _audit_pass(original, draft, tone, strength, mode, use_case, domain, style_n
     client = _client()
     response = client.chat.completions.create(
         model=settings.OPENAI_MODEL,
-        temperature=0.40,
+        temperature=0.52,
         messages=[
             {
                 "role": "system",

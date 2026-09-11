@@ -40,6 +40,17 @@ BANNED_PHRASES = {
     "integral", "paramount", "widespread", "renowned", "famous", "recognized", "acknowledged",
     "worldwide", "universal language", "ignite passion", "unite different people",
     "global phenomenon", "passion and fair play",
+    # Encyclopedic / school-essay AI patterns (common in ZeroGPT flags).
+    "also known as", "team sport", "objective is to", "objective is", "throughout history",
+    "dates back to", "dates back", "rectangular field", "spherical ball", "played between",
+    "very popular", "widely regarded", "widely considered", "widely used", "widely known",
+    "millions of people", "millions of fans", "attracts millions", "contributes significantly",
+    "plays a vital role", "plays an important role", "rich history", "in ancient times",
+    "ever since then", "throughout the world", "across the globe", "on a global scale",
+    "it is believed", "it is considered", "it is estimated", "it is one of the",
+    "one of the most", "some of the most", "known for its", "famous for its",
+    "in addition to", "as well as", "such as", "including but not limited",
+    "whether you are", "whether you're", "not only", "but also",
 }
 
 
@@ -173,7 +184,24 @@ def sentence_starter_diversity(text):
     return len(starters)
 
 
-def score_candidate(text):
+def templated_opener_count(text):
+    """Count sentences that open like Wikipedia or templated AI essays."""
+    patterns = (
+        r"^(it|there|this|that|these|those|one|many|most|some|football|the game|the sport)\s+"
+        r"(is|are|was|were|has|have|can|will)\b",
+        r"^(in|throughout|during)\s+(the|ancient|modern)\b",
+    )
+    count = 0
+    for sentence in _sentences(text):
+        lower = sentence.lower()
+        for pattern in patterns:
+            if re.match(pattern, lower):
+                count += 1
+                break
+    return count
+
+
+def score_candidate(text, original=None):
     """
     Return a higher-is-better score for a human-style rewrite candidate.
 
@@ -246,6 +274,19 @@ def score_candidate(text):
     # Banned AI-speak is heavily penalized.
     score -= banned * 40
 
+    # Flat rhythm (every sentence similar length) reads machine-made to detectors.
+    if burstiness < 3.5:
+        score -= 22
+
+    # Wikipedia-style openers.
+    score -= templated_opener_count(text) * 12
+
+    # Keep facts but break the original's sentence skeleton.
+    if original:
+        sim = similarity(text, original)
+        if sim > 0.68:
+            score -= (sim - 0.68) * 180
+
     return score
 
 
@@ -258,7 +299,7 @@ def pick_best_candidate(candidates, original):
     for candidate in candidates:
         if not candidate or candidate.strip() == original.strip():
             continue
-        scored.append((score_candidate(candidate), candidate))
+        scored.append((score_candidate(candidate, original=original), candidate))
 
     if not scored:
         for candidate in candidates:
