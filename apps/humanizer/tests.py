@@ -10,6 +10,7 @@ from apps.humanizer.models import RewriteJob
 from apps.humanizer.services.chunking import chunk_text
 from apps.humanizer.services.diff import word_diff_html
 from apps.humanizer.services.openai import detect_domain
+from apps.humanizer.services.profile import PROFILE_ESSAY, PROFILE_SHORT, detect_writing_profile
 from apps.humanizer.services.quota import QuotaError, assert_can_humanize, words_used_this_week
 from apps.humanizer.services.scoring import pick_best_candidate, score_candidate
 from apps.humanizer.services.wordcount import count_words
@@ -252,6 +253,23 @@ class HumanizeApiTests(TestCase):
         self.assertTrue(stranger.pk)
 
 
+class WritingProfileTests(TestCase):
+    """Expository multi-paragraph input uses the essay rewrite profile."""
+
+    def test_four_paragraph_essay_uses_essay_profile(self):
+        text = (
+            "Football is very popular.\n\n"
+            "A match has two halves.\n\n"
+            "Football has a long history.\n\n"
+            "Today, football brings people together."
+        )
+        self.assertEqual(detect_writing_profile(text), PROFILE_ESSAY)
+
+    def test_short_bio_uses_short_profile(self):
+        text = "I'm Changool. I study BIT and work in research in Myanmar."
+        self.assertEqual(detect_writing_profile(text), PROFILE_SHORT)
+
+
 class ScoringTests(TestCase):
     """Local heuristic scorer picks the more human-sounding candidate."""
 
@@ -282,8 +300,8 @@ class ScoringTests(TestCase):
             "You're trying to put it in the other net — hands off limits unless you're the keeper."
         )
         self.assertGreater(
-            score_candidate(human, original=wiki),
-            score_candidate(wiki, original=wiki),
+            score_candidate(human, original=wiki, profile=PROFILE_ESSAY),
+            score_candidate(wiki, original=wiki, profile=PROFILE_ESSAY),
         )
 
     def test_domain_banned_helpers_are_nonempty(self):

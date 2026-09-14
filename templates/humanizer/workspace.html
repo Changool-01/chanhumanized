@@ -71,30 +71,36 @@
 
     {# Split panes — CSS stacks them under 800px. #}
     <div class="workspace-split">
-        <section class="ws-pane">
-            <div class="ws-pane-head">
-                <h2>Original</h2>
-                <p class="ws-count">
-                    <span data-word-count>0</span>
-                    /
-                    <span data-word-cap>{{ snapshot.request_limit|intcomma }}</span>
-                    words
-                </p>
-            </div>
-            <label class="visually-hidden" for="original-text">Original text</label>
-            <textarea id="original-text" name="original_text" class="ws-textarea" data-original placeholder="Paste a sentence or paragraph that sounds too stiff…"></textarea>
-        </section>
-        <section class="ws-pane">
-            <div class="ws-pane-head">
-                <h2>Humanized</h2>
-                <div class="ws-actions">
-                    <button type="button" class="btn-ghost" data-copy disabled>Copy</button>
-                    <button type="button" class="btn-ghost" data-download disabled>Download .txt</button>
+        <section class="ws-pane spotlight-border" data-spotlight>
+            {% include "partials/spotlight.html" %}
+            <div class="spotlight-inner">
+                <div class="ws-pane-head">
+                    <h2>Original</h2>
+                    <p class="ws-count">
+                        <span data-word-count>0</span>
+                        /
+                        <span data-word-cap>{{ snapshot.request_limit|intcomma }}</span>
+                        words
+                    </p>
                 </div>
+                <label class="visually-hidden" for="original-text">Original text</label>
+                <textarea id="original-text" name="original_text" class="ws-textarea" data-original placeholder="Paste a sentence or paragraph that sounds too stiff…"></textarea>
             </div>
-            <div class="ws-output" data-output tabindex="0">
-                <p class="ws-empty" data-empty>Your rewritten text will appear here.</p>
-                <pre class="ws-result" data-result hidden></pre>
+        </section>
+        <section class="ws-pane spotlight-border" data-spotlight>
+            {% include "partials/spotlight.html" %}
+            <div class="spotlight-inner">
+                <div class="ws-pane-head">
+                    <h2>Humanized</h2>
+                    <div class="ws-actions">
+                        <button type="button" class="btn-ghost" data-copy disabled>Copy</button>
+                        <button type="button" class="btn-ghost" data-download disabled>Download .txt</button>
+                    </div>
+                </div>
+                <div class="ws-output" data-output tabindex="0">
+                    <p class="ws-empty" data-empty>Your rewritten text will appear here.</p>
+                    <pre class="ws-result" data-result hidden></pre>
+                </div>
             </div>
         </section>
     </div>

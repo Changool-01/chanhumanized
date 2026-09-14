@@ -12,6 +12,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/spotlight.css' %}">
     <link rel="stylesheet" href="{% static 'css/pages.css' %}">
     <link rel="stylesheet" href="{% static 'css/workspace.css' %}">
     {% block extra_head %}{% endblock %}
@@ -31,6 +32,7 @@
     {% include "partials/footer.html" %}
 
     <script src="{% static 'js/csrf.js' %}"></script>
+    <script src="{% static 'js/spotlight.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

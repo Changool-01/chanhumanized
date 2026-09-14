@@ -51,6 +51,11 @@ BANNED_PHRASES = {
     "one of the most", "some of the most", "known for its", "famous for its",
     "in addition to", "as well as", "such as", "including but not limited",
     "whether you are", "whether you're", "not only", "but also",
+    "four billion", "billion fans", "long history", "many experts believe",
+    "experts believe", "brings people together", "anyone can learn",
+    "simple rules that", "two of the biggest", "biggest events in sports",
+    "with great passion", "every season", "football is very popular",
+    "the game has simple", "today, football",
 }
 
 
@@ -201,19 +206,11 @@ def templated_opener_count(text):
     return count
 
 
-def score_candidate(text, original=None):
+def _score_short_profile(text, original=None):
     """
-    Return a higher-is-better score for a human-style rewrite candidate.
+    Score punchy rewrites (bios, emails, single paragraphs).
 
-    The score rewards:
-    - short, uneven sentence length (average ~13, max under 22)
-    - several very short sentences (< 6 words)
-    - short average word length
-    - high function-word ratio
-    - some natural repetition
-    - varied sentence starters
-    It penalizes banned AI phrases, long words, excessive consecutive short
-    sentences (choppiness), and sentences that are too long.
+    Rewards short uneven sentences; penalizes choppy fragment runs.
     """
     avg_sent = avg_sentence_length(text)
     max_sent = max_sentence_length(text)
@@ -290,7 +287,71 @@ def score_candidate(text, original=None):
     return score
 
 
-def pick_best_candidate(candidates, original):
+def _score_essay_profile(text, original=None):
+    """
+    Score multi-paragraph expository rewrites.
+
+    Favors flowing prose with varied rhythm — not SMS-style fragments.
+    """
+    avg_sent = avg_sentence_length(text)
+    max_sent = max_sentence_length(text)
+    very_short = very_short_sentence_count(text)
+    avg_word = avg_word_length(text)
+    func_ratio = function_word_ratio(text)
+    repeat_ratio = repetition_ratio(text)
+    banned = banned_phrase_count(text)
+    long_ratio = long_word_ratio(text)
+    sentence_count = len(_sentences(text))
+    choppy_runs = _consecutive_very_short(text)
+    burstiness = sentence_length_std(text)
+    starter_diversity = sentence_starter_diversity(text)
+
+    score = 100
+
+    # Flowing student essay: average ~15–19 words, not telegraphic.
+    score -= abs(avg_sent - 17) * 2.5
+
+    if max_sent > 32:
+        score -= (max_sent - 32) * 3 + 15
+
+    score += min(very_short, 2) * 6
+    score -= choppy_runs * 8
+
+    if sentence_count > 0:
+        short_count = sum(1 for c in _sentence_word_counts(text) if c < 12)
+        short_ratio = short_count / sentence_count
+        if 0.2 <= short_ratio <= 0.45:
+            score += 15
+        elif short_ratio > 0.55:
+            score -= 20
+
+    score += min(burstiness, 10) * 2.5
+    score += min(starter_diversity, 8) * 4
+    score -= avg_word * 5
+    score -= long_ratio * 40
+    score += func_ratio * 70
+    score += min(repeat_ratio, 0.1) * 50
+    score -= banned * 55
+    if burstiness < 4:
+        score -= 18
+    score -= templated_opener_count(text) * 18
+
+    if original:
+        sim = similarity(text, original)
+        if sim > 0.72:
+            score -= (sim - 0.72) * 200
+
+    return score
+
+
+def score_candidate(text, original=None, profile="short"):
+    """Return a higher-is-better score; profile is ``short`` or ``essay``."""
+    if profile == "essay":
+        return _score_essay_profile(text, original=original)
+    return _score_short_profile(text, original=original)
+
+
+def pick_best_candidate(candidates, original, profile="short"):
     """
     Pick the highest-scoring candidate that is not empty and not identical to
     the original. If none are usable, return the first non-empty candidate.
@@ -299,7 +360,7 @@ def pick_best_candidate(candidates, original):
     for candidate in candidates:
         if not candidate or candidate.strip() == original.strip():
             continue
-        scored.append((score_candidate(candidate, original=original), candidate))
+        scored.append((score_candidate(candidate, original=original, profile=profile), candidate))
 
     if not scored:
         for candidate in candidates:

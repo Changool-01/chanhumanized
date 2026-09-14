@@ -11,25 +11,31 @@
 </section>
 
 <section class="dash-grid">
-    <article class="dash-card">
-        <h2>Plan</h2>
-        {% if snapshot.is_pro %}
-            <p class="dash-value quota-plan-pro">Pro</p>
-            <p>Unlimited humanize in the workspace.</p>
-        {% else %}
-            <p class="dash-value">Free</p>
-            <p>{{ snapshot.weekly_limit|intcomma }} words each week, {{ snapshot.request_limit|intcomma }} per request.</p>
-            <p><a href="{% url 'pages:pricing' %}">See Pro (${{ pro_price }}/month)</a></p>
-        {% endif %}
+    <article class="dash-card spotlight-border" data-spotlight>
+        {% include "partials/spotlight.html" %}
+        <div class="spotlight-inner">
+            <h2>Plan</h2>
+            {% if snapshot.is_pro %}
+                <p class="dash-value quota-plan-pro">Pro</p>
+                <p>Unlimited humanize in the workspace.</p>
+            {% else %}
+                <p class="dash-value">Free</p>
+                <p>{{ snapshot.weekly_limit|intcomma }} words each week, {{ snapshot.request_limit|intcomma }} per request.</p>
+                <p><a href="{% url 'pages:pricing' %}">See Pro (${{ pro_price }}/month)</a></p>
+            {% endif %}
+        </div>
     </article>
-    <article class="dash-card">
-        <h2>This week</h2>
-        <p class="dash-value">{{ snapshot.used|intcomma }} words used</p>
-        {% if snapshot.is_pro %}
-            <p>Your week resets Monday, 00:00 UTC.</p>
-        {% else %}
-            <p>{{ snapshot.remaining|intcomma }} words remaining. Week resets Monday, 00:00 UTC.</p>
-        {% endif %}
+    <article class="dash-card spotlight-border" data-spotlight>
+        {% include "partials/spotlight.html" %}
+        <div class="spotlight-inner">
+            <h2>This week</h2>
+            <p class="dash-value">{{ snapshot.used|intcomma }} words used</p>
+            {% if snapshot.is_pro %}
+                <p>Your week resets Monday, 00:00 UTC.</p>
+            {% else %}
+                <p>{{ snapshot.remaining|intcomma }} words remaining. Week resets Monday, 00:00 UTC.</p>
+            {% endif %}
+        </div>
     </article>
 </section>
 <p class="dash-actions">

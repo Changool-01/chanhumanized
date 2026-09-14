@@ -12,6 +12,7 @@ from openai import OpenAI, OpenAIError
 
 from apps.humanizer.models import RewriteJob
 from apps.humanizer.services.chunking import chunk_text
+from apps.humanizer.services.profile import PROFILE_ESSAY, PROFILE_SHORT, detect_writing_profile
 from apps.humanizer.services.scoring import pick_best_candidate
 from apps.humanizer.services.wordcount import count_words
 
@@ -245,7 +246,69 @@ FUNCTION_WORDS = (
 )
 
 
-def build_system_prompt(tone, strength, mode, use_case, domain, style_note):
+def _build_essay_system_prompt(tone, strength, mode, use_case, domain, style_note):
+    """Prompt for multi-paragraph expository / school-essay input."""
+    tone_hint = TONE_HINTS.get(tone, TONE_HINTS[RewriteJob.TONE_ACADEMIC])
+    strength_hint = STRENGTH_HINTS.get(strength, STRENGTH_HINTS[RewriteJob.STRENGTH_MEDIUM])
+    use_case_hint = USE_CASE_HINTS.get(use_case, USE_CASE_HINTS[RewriteJob.USE_CASE_GENERAL])
+    domain_hint = DOMAIN_HINTS.get(domain, DOMAIN_HINTS[RewriteJob.DOMAIN_GENERAL])
+    domain_banned = _domain_banned_line(domain)
+    style_line = (
+        f"\nStyle note from the user: {style_note}\nFollow it if it does not conflict with the rules above."
+        if style_note
+        else ""
+    )
+    unit = "sentences" if mode == RewriteJob.MODE_SENTENCE else "paragraphs"
+
+    return f"""You rewrite multi-paragraph expository text so it sounds like a real student draft — clear, readable, and uneven in a natural way. NOT Wikipedia, NOT ChatGPT, NOT a humanizer tool, and NOT a chain of tiny text-message sentences.
+
+Keep the same number of paragraphs. Separate paragraphs with a blank line. Keep every fact, number, name, and date from the source.
+
+### How to rewrite (critical)
+- Change the wording of EVERY sentence. Do not keep the source sentence skeleton.
+- Mix sentence lengths inside each paragraph: some ~10 words, some ~20–26. At most one very short sentence per paragraph.
+- Start each paragraph differently (question, time, place, "Ask anyone…", contrast, concrete scene). Never open two paragraphs with the same word.
+- Use plain words and contractions sometimes — not in every sentence.
+- Add light human texture without new facts: "hard to wrap your head around", "argue about details", "dominate headlines" — sparingly, once or twice total.
+- Prefer what people do over abstract labels: "fans travel", "squads chase the ball" — not "the sport is characterized by".
+
+### Never use (AI / QuillBot flags)
+- Openers: "Football is very popular", "The game has simple rules", "Football has a long history", "Today, football brings…", "It is played by", "Many experts believe".
+- Phrases: four billion fans, long history, brings people together, anyone can learn quickly, two of the biggest events, with great passion every season, widely regarded, throughout history, in addition, as well as, not only… but also.{domain_banned}
+
+### Example — four-paragraph football essay
+AI text:
+Football is very popular and has more than four billion fans worldwide. It is played by two teams, each with eleven players, who try to score by putting the ball into the opponent's goal. The game has simple rules that anyone can learn quickly.
+
+A football match has two halves of forty-five minutes each. Players move the ball using their feet, head, or body, but only the goalkeeper can use their hands. The team that scores more goals wins.
+
+Football has a long history. Many experts believe it started in China, Greece, and Rome. In 1863, England formed the Football Association and created the modern rules we use today.
+
+Today, football brings people together. The FIFA World Cup and the Champions League are two of the biggest events in sports. Fans follow their favorite teams and players with great passion every season.
+
+Human rewrite:
+Almost everywhere you look, someone is talking about football — TV, bars, schoolyards. Estimates put the fan base above four billion, which is hard to wrap your head around. On the pitch, two squads of eleven chase one ball, and the only real job is to score more than the other side before the whistle.
+
+Matches run in two forty-five-minute halves. Field players use feet, chest, or head; keepers alone can grab the ball with their hands inside their box. Simple rules, but the pace can feel brutal when both teams push hard.
+
+The game didn't spring up overnight. Kick-around versions show up in old records from China, Greece, and Rome, though historians argue about details. What we know for sure is that England nailed down modern laws in 1863 when the Football Association formed.
+
+Big tournaments still set the calendar for millions of fans. The World Cup and the Champions League dominate headlines, and loyalty to club or country can get pretty emotional season after season.
+
+### Before you output
+- Scan for banned openers and rewrite any line that still sounds like an encyclopedia or AI essay.
+- Return ONLY the rewritten text. Same paragraph count as the input.
+
+Format: {use_case_hint}
+Tone: {tone_hint}
+Strength: {strength_hint}
+Domain: {domain_hint}
+{style_line}
+
+Rewrite the user's {unit}. Preserve paragraph breaks."""
+
+
+def build_system_prompt(tone, strength, mode, use_case, domain, style_note, profile=PROFILE_SHORT):
     """
     Return a system prompt tuned for natural, human-sounding rewrites.
 
@@ -253,6 +316,9 @@ def build_system_prompt(tone, strength, mode, use_case, domain, style_note):
     guidance, and a self-check so the model removes templated language before
     returning.
     """
+    if profile == PROFILE_ESSAY:
+        return _build_essay_system_prompt(tone, strength, mode, use_case, domain, style_note)
+
     tone_hint = TONE_HINTS.get(tone, TONE_HINTS[RewriteJob.TONE_PROFESSIONAL])
     strength_hint = STRENGTH_HINTS.get(strength, STRENGTH_HINTS[RewriteJob.STRENGTH_MEDIUM])
     use_case_hint = USE_CASE_HINTS.get(use_case, USE_CASE_HINTS[RewriteJob.USE_CASE_GENERAL])
@@ -382,11 +448,43 @@ Domain guidance: {domain_hint}
 Rewrite the user's {unit} and return ONLY the final rewritten text."""
 
 
-def build_audit_prompt(tone, strength, mode, use_case, domain, style_note):
+def _build_essay_audit_prompt(tone, strength, mode, use_case, domain, style_note):
+    """Second pass for essays: remove AI residue without forcing SMS-style chops."""
+    tone_hint = TONE_HINTS.get(tone, TONE_HINTS[RewriteJob.TONE_ACADEMIC])
+    use_case_hint = USE_CASE_HINTS.get(use_case, USE_CASE_HINTS[RewriteJob.USE_CASE_GENERAL])
+    domain_banned = _domain_banned_line(domain)
+    style_line = (
+        f"\nStyle note: {style_note}\nApply only if it does not conflict with these rules."
+        if style_note
+        else ""
+    )
+
+    return f"""You edit a student essay draft. Keep every fact from ORIGINAL. Keep the same paragraph count and blank lines between paragraphs.
+
+Do NOT shorten every sentence. Do NOT turn paragraphs into staccato fragments. Do NOT make the tone more formal.
+
+Remove encyclopedic / AI lines only:
+- "Football is very popular…", "The game has…", "It is played by…", "Many experts believe…", "Today, football brings…"
+- four billion fans, long history, brings people together, biggest events in sports, with great passion
+- It is / There are / This is sentence openers — rewrite those sentences entirely.{domain_banned}
+
+Vary paragraph openings. Ensure no two paragraphs start the same way. Fix any sentence still copied from the ORIGINAL skeleton.
+
+Tone: {tone_hint}
+Format: {use_case_hint}
+{style_line}
+
+Return only the edited text."""
+
+
+def build_audit_prompt(tone, strength, mode, use_case, domain, style_note, profile=PROFILE_SHORT):
     """
     Return a second-pass prompt that enforces sentence length, word length,
     function-word density, and varied sentence starts on a draft rewrite.
     """
+    if profile == PROFILE_ESSAY:
+        return _build_essay_audit_prompt(tone, strength, mode, use_case, domain, style_note)
+
     tone_hint = TONE_HINTS.get(tone, TONE_HINTS[RewriteJob.TONE_PROFESSIONAL])
     use_case_hint = USE_CASE_HINTS.get(use_case, USE_CASE_HINTS[RewriteJob.USE_CASE_GENERAL])
     domain_banned = _domain_banned_line(domain)
@@ -445,13 +543,22 @@ def _client():
     return OpenAI(api_key=key, timeout=settings.OPENAI_TIMEOUT_SECONDS)
 
 
-def _first_pass(text, tone, strength, mode, use_case, domain, style_note, regenerate=False):
+def _first_pass(
+    text, tone, strength, mode, use_case, domain, style_note, profile=PROFILE_SHORT, regenerate=False
+):
     """Generate a draft rewrite with the human-style system prompt."""
     client = _client()
     temperature = STRENGTH_TEMPERATURE.get(strength, 0.70)
+    if profile == PROFILE_ESSAY:
+        temperature = min(0.92, temperature + 0.12)
     user_message = text
+    if profile == PROFILE_ESSAY:
+        user_message = (
+            "Rewrite every sentence. Keep the same number of paragraphs (blank line between them).\n\n"
+            + text
+        )
     if regenerate:
-        user_message = "Produce a different phrasing from before.\n\n" + text
+        user_message = "Produce a different phrasing from before.\n\n" + user_message
 
     response = client.chat.completions.create(
         model=settings.OPENAI_MODEL,
@@ -459,7 +566,9 @@ def _first_pass(text, tone, strength, mode, use_case, domain, style_note, regene
         messages=[
             {
                 "role": "system",
-                "content": build_system_prompt(tone, strength, mode, use_case, domain, style_note),
+                "content": build_system_prompt(
+                    tone, strength, mode, use_case, domain, style_note, profile=profile
+                ),
             },
             {"role": "user", "content": user_message},
         ],
@@ -467,16 +576,21 @@ def _first_pass(text, tone, strength, mode, use_case, domain, style_note, regene
     return (response.choices[0].message.content or "").strip()
 
 
-def _audit_pass(original, draft, tone, strength, mode, use_case, domain, style_note):
+def _audit_pass(
+    original, draft, tone, strength, mode, use_case, domain, style_note, profile=PROFILE_SHORT
+):
     """Tighten the draft so it hits the human-style targets."""
     client = _client()
+    audit_temp = 0.45 if profile == PROFILE_ESSAY else 0.52
     response = client.chat.completions.create(
         model=settings.OPENAI_MODEL,
-        temperature=0.52,
+        temperature=audit_temp,
         messages=[
             {
                 "role": "system",
-                "content": build_audit_prompt(tone, strength, mode, use_case, domain, style_note),
+                "content": build_audit_prompt(
+                    tone, strength, mode, use_case, domain, style_note, profile=profile
+                ),
             },
             {
                 "role": "user",
@@ -487,7 +601,9 @@ def _audit_pass(original, draft, tone, strength, mode, use_case, domain, style_n
     return (response.choices[0].message.content or "").strip()
 
 
-def rewrite_chunk(text, tone, strength, mode, use_case, domain, style_note, regenerate=False):
+def rewrite_chunk(
+    text, tone, strength, mode, use_case, domain, style_note, profile=PROFILE_SHORT, regenerate=False
+):
     """
     Rewrite one chunk using a multi-candidate + two-pass flow.
 
@@ -499,11 +615,23 @@ def rewrite_chunk(text, tone, strength, mode, use_case, domain, style_note, rege
     makes the first click match the quality of the old "Try again" click.
     """
     candidates = [
-        _first_pass(text, tone, strength, mode, use_case, domain, style_note, regenerate=regenerate)
+        _first_pass(
+            text,
+            tone,
+            strength,
+            mode,
+            use_case,
+            domain,
+            style_note,
+            profile=profile,
+            regenerate=regenerate,
+        )
         for _ in range(settings.HUMANIZE_CANDIDATES)
     ]
-    best_draft = pick_best_candidate(candidates, text)
-    return _audit_pass(text, best_draft, tone, strength, mode, use_case, domain, style_note)
+    best_draft = pick_best_candidate(candidates, text, profile=profile)
+    return _audit_pass(
+        text, best_draft, tone, strength, mode, use_case, domain, style_note, profile=profile
+    )
 
 
 def humanize_text(text, tone, strength, mode, use_case, domain, style_note, regenerate=False):
@@ -512,9 +640,25 @@ def humanize_text(text, tone, strength, mode, use_case, domain, style_note, rege
 
     Chunks are joined with a blank line so paragraph breaks survive.
     """
-    pieces = chunk_text(text, settings.HUMANIZE_CHUNK_WORDS)
+    profile = detect_writing_profile(text)
+    chunk_limit = (
+        settings.HUMANIZE_ESSAY_CHUNK_WORDS
+        if profile == PROFILE_ESSAY
+        else settings.HUMANIZE_CHUNK_WORDS
+    )
+    pieces = chunk_text(text, chunk_limit)
     rewritten = [
-        rewrite_chunk(piece, tone, strength, mode, use_case, domain, style_note, regenerate=regenerate)
+        rewrite_chunk(
+            piece,
+            tone,
+            strength,
+            mode,
+            use_case,
+            domain,
+            style_note,
+            profile=profile,
+            regenerate=regenerate,
+        )
         for piece in pieces
     ]
     return "\n\n".join(rewritten), settings.OPENAI_MODEL

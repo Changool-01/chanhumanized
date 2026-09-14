@@ -3,8 +3,11 @@
 
 {% block content %}
 <section class="auth-wrap">
-    <div class="auth-card">
-        {% block auth_inner %}{% endblock %}
+    <div class="spotlight-border" data-spotlight>
+        {% include "partials/spotlight.html" %}
+        <div class="auth-card spotlight-inner">
+            {% block auth_inner %}{% endblock %}
+        </div>
     </div>
 </section>
 {% endblock %}

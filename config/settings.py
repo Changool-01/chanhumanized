@@ -243,6 +243,8 @@ PRO_REQUEST_WORD_LIMIT = 600
 # Chunk size keeps each OpenAI call inside the prompt's 100-200 word sweet spot.
 # Longer chunks (300-500 words) cause the model to drift back to AI-style output.
 HUMANIZE_CHUNK_WORDS = 200
+# Multi-paragraph essays stay in one chunk when possible so paragraph voice stays consistent.
+HUMANIZE_ESSAY_CHUNK_WORDS = env.int("HUMANIZE_ESSAY_CHUNK_WORDS", default=450)
 
 # Number of first-pass candidates to generate and score. Higher = more cost,
 # better consistency. Set to 1 to disable candidate selection.

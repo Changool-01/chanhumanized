@@ -1,0 +1,54 @@
+/* Mouse-follow spotlight border, ported from motion-primitives SpotlightBorder.
+   Outer shell is a 1px pad; the blurred beam shows through as the border. */
+
+.spotlight-border {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: var(--radius);
+    padding: 1px;
+    background: var(--color-line);
+    box-shadow: var(--shadow);
+}
+
+.spotlight {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: var(--spotlight-size);
+    height: var(--spotlight-size);
+    border-radius: 50%;
+    background: linear-gradient(
+        to right,
+        var(--spotlight-from),
+        var(--spotlight-via),
+        var(--spotlight-to)
+    );
+    filter: blur(64px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    will-change: transform;
+}
+
+.spotlight-border.is-spotlight-on .spotlight {
+    opacity: 1;
+}
+
+.spotlight-inner {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-width: 0;
+    border-radius: calc(var(--radius) - 1px);
+    background: var(--color-bg-elev);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spotlight {
+        display: none;
+    }
+}

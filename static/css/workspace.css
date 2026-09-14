@@ -148,12 +148,15 @@
 }
 
 .ws-pane {
+    min-height: 24rem;
+    height: 100%;
+}
+
+.ws-pane .spotlight-inner {
     display: flex;
     flex-direction: column;
     min-height: 24rem;
-    background: var(--color-bg-elev);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
+    height: 100%;
     overflow: hidden;
 }
 

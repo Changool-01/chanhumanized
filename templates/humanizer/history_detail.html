@@ -13,20 +13,26 @@
         </div>
     </header>
     <div class="workspace-split">
-        <section class="ws-pane">
-            <div class="ws-pane-head"><h2>Original</h2></div>
-            <pre class="ws-result ws-result-static">{{ job.original_text }}</pre>
-        </section>
-        <section class="ws-pane">
-            <div class="ws-pane-head">
-                <h2>Humanized</h2>
-                <div class="ws-actions">
-                    <button type="button" class="btn-ghost" data-copy disabled>Copy</button>
-                    <button type="button" class="btn-ghost" data-download disabled>Download .txt</button>
-                </div>
+        <section class="ws-pane spotlight-border" data-spotlight>
+            {% include "partials/spotlight.html" %}
+            <div class="spotlight-inner">
+                <div class="ws-pane-head"><h2>Original</h2></div>
+                <pre class="ws-result ws-result-static">{{ job.original_text }}</pre>
             </div>
-            <div class="ws-output" data-output tabindex="0">
-                <pre class="ws-result" data-result>{{ diff_html|safe }}</pre>
+        </section>
+        <section class="ws-pane spotlight-border" data-spotlight>
+            {% include "partials/spotlight.html" %}
+            <div class="spotlight-inner">
+                <div class="ws-pane-head">
+                    <h2>Humanized</h2>
+                    <div class="ws-actions">
+                        <button type="button" class="btn-ghost" data-copy disabled>Copy</button>
+                        <button type="button" class="btn-ghost" data-download disabled>Download .txt</button>
+                    </div>
+                </div>
+                <div class="ws-output" data-output tabindex="0">
+                    <pre class="ws-result" data-result>{{ diff_html|safe }}</pre>
+                </div>
             </div>
         </section>
     </div>
